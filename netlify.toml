@@ -1,4 +1,0 @@
-# إعدادات Netlify: الموقع جاهز كما هو داخل مجلد public (لا يحتاج أمر بناء)
-[build]
-  publish = "public"
-  command = ""
