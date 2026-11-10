@@ -1,0 +1,43 @@
+name: Sync upstream main
+
+# Syncs this fork's main from turkialmajedi/maeen-quran with the merge-upstream
+# API. That merges (or fast-forwards) and does not force-reset, so commits that
+# exist only on the fork — including this workflow — are kept. A conflict fails
+# the job. The job runs only in SameerAwaji/maeen-quran.
+
+on:
+  schedule:
+    # Hourly, offset from :00. GitHub drops queued jobs most often at the top of the hour.
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Sync main from upstream
+    if: github.repository == 'SameerAwaji/maeen-quran'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge upstream into main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          body="$(mktemp)"
+          err="$(mktemp)"
+          set +e
+          gh api repos/${{ github.repository }}/merge-upstream -f branch=main >"$body" 2>"$err"
+          status=$?
+          set -e
+          cat "$err" "$body"
+          if [ "$status" -ne 0 ]; then
+            if grep -Eqi 'HTTP 409|merge conflict' "$err" "$body"; then
+              echo "::error title=Upstream sync conflict::main could not be synced from turkialmajedi/maeen-quran because of a merge conflict. Resolve the conflict on this fork. This workflow does not force-reset main."
+              exit 1
+            fi
+            echo "::error title=Upstream sync failed::Syncing main from turkialmajedi/maeen-quran failed (gh exit ${status}). If the response is HTTP 422 and mentions .github/workflows, GITHUB_TOKEN cannot apply that upstream change."
+            exit "$status"
+          fi
+          echo "Upstream sync succeeded: $(jq -r '"\(.message) (merge_type=\(.merge_type))"' "$body")"
