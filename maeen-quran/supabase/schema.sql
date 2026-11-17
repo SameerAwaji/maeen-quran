@@ -607,6 +607,13 @@ create policy push_own on public.push_subs for all to authenticated
 -- إعدادات الإرسال (لا يقرؤها أحد من الموقع؛ تُضبط مرة واحدة من SQL Editor)
 create table if not exists public.push_settings (id int primary key default 1, fn_url text, secret text);
 alter table public.push_settings enable row level security;
+alter table public.push_settings add column if not exists vapid_public text;
+alter table public.push_settings add column if not exists vapid_private text;
+-- كلمة سر عشوائية تُنشأ تلقائياً (لا يراها أحد). مفاتيح VAPID تنشئها دالة send-push عند أول تشغيل.
+-- بعد نشر الدالة شغّل مرة واحدة مع رابط مشروعك:
+--   update public.push_settings set fn_url = 'https://YOUR-PROJECT.supabase.co/functions/v1/send-push' where id = 1;
+insert into public.push_settings (id, secret) values (1, replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''))
+on conflict (id) do update set secret = coalesce(public.push_settings.secret, excluded.secret);
 
 do $$ begin create extension if not exists pg_net; exception when others then null; end $$;
 
