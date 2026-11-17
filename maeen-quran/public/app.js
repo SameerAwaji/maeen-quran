@@ -696,6 +696,13 @@ function offBar(){let el=document.getElementById("offbar");const n=OFF.q.length;
 window.addEventListener("online",()=>{offBar();if(MODE==="live"){if(OFF.q.length)offFlush();else if(OFF.on){OFF.on=false;reloadAll()}}});
 window.addEventListener("offline",()=>{OFF.on=true;offBar()});
 setInterval(()=>{if(OFF.q.length&&navigator.onLine&&MODE==="live")offFlush()},30000);
+/* تحديث تلقائي: إذا نُشرت نسخة جديدة من الموقع تُحمَّل عند الرجوع للصفحة */
+let APPV=null;
+async function appVer(){try{const r=await fetch("/app.js",{method:"HEAD",cache:"no-store"});return r.ok?(r.headers.get("etag")||r.headers.get("last-modified")):null}catch(e){return null}}
+setTimeout(async()=>{APPV=await appVer()},4000);
+async function checkUpd(){if(!APPV||!navigator.onLine)return;const v=await appVer();if(v&&v!==APPV){const busy=($("#modal")&&$("#modal").innerHTML.trim())||hasDrafts()||OFF.q.length;if(busy){toast("يوجد تحديث جديد للمنصة، سيُطبَّق عند إعادة فتح الصفحة");APPV=v;return}location.reload()}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkUpd()});
+setInterval(checkUpd,5*60*1000);
 /* لقطة البيانات على الجهاز (IndexedDB) */
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("maeen-off",1);r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbSet(k,v){try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){}}
