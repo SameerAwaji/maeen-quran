@@ -651,16 +651,17 @@ function reschedForm(s){const P=planSchedule(s);if(!P||P.loading){toast("جار�
 /* ============ خريطة الأخطاء على المصحف ============ */
 let HEATM=null;const HEATC={};
 function heatMap(sid){const L=logsOf(sid).filter(l=>(l.marks||[]).length);const key=sid+"|"+L.map(l=>l.date+l.marks.length).join(",");if(HEATC[sid]&&HEATC[sid].key===key)return HEATC[sid].m;
-  const M={};L.forEach(l=>l.marks.forEach(x=>{const k=x.g+":"+x.w;const o=M[k]||(M[k]={n:0,t:0,l:0,last:"",g:x.g,w:x.w,word:x.word});o.n++;o[MT(x.t)]++;if(l.date>o.last)o.last=l.date}));HEATC[sid]={key,m:M};return M}
+  const M={};L.forEach(l=>l.marks.forEach(x=>{const k=x.g+":"+x.w;const o=M[k]||(M[k]={n:0,t:0,l:0,last:"",g:x.g,w:x.w,word:x.word,c:null});o.n++;o[MT(x.t)]++;if(l.date>=o.last){o.last=l.date;o.lt=MT(x.t);if(x.c!=null)o.c=x.c}}));HEATC[sid]={key,m:M};return M}
 const pgOfG=g=>Q?pageOf(g):1;
 function heatPages(M){const P={};Object.values(M).forEach(o=>{const p=pgOfG(o.g);P[p]=(P[p]||0)+o.n});return Object.entries(P).map(([p,n])=>[+p,n]).sort((a,b)=>b[1]-a[1])}
 function heatAllowed(m,sid){if(!m)return false;if(isStaff(m))return true;if(m.role==="student")return sid===m.id;if(m.role==="parent")return (m.childIds||[]).includes(sid);return false}
-function heatSpan(k,ch,ff){const o=HEATM&&HEATM[k];if(!o)return ff?"":`<span>${ch}</span>`;const lv=o.n>=3?3:o.n;const tt=[o.t?`تنبيه ×${o.t}`:"",o.l?`تلقين ×${o.l}`:""].filter(Boolean).join(" · ")+(o.last?` · آخرها ${fmtShort(o.last)}`:"");
-  return `<span class="hw hw${lv} ${o.l?"hwl":""}" ${ff?`style="${ff}"`:""} title="${esc(tt)}">${ch}</span>`}
+function heatSpan(k,ch,ff){const o=HEATM&&HEATM[k];if(!o)return ff?"":`<span>${ch}</span>`;const tt=[o.t?`تنبيه ×${o.t}`:"",o.l?`تلقين ×${o.l}`:""].filter(Boolean).join(" · ")+(o.last?` · آخرها ${fmtShort(o.last)}`:"");
+  let inner=ch;if(!ff&&o.c!=null){try{const cl=CLUS(ch);inner=cl.map((x,i)=>i===o.c?`<span class="mc">${x}</span>`:x).join("")}catch(e){}}
+  return `<span class="w hw ${o.l?MK.l[1]:MK.t[1]}" ${o.n>1?`data-n="${o.n}"`:""} ${ff?`style="${ff}"`:""} title="${esc(tt)}">${inner}</span>`}
 function heatBar(m,pg,tm){const opts=m.role==="student"?[[m.id,"أخطائي"]]:m.role==="parent"?parentKids(m).map(s=>[s.id,s.name]):isStaff(m)?myStudents(m).filter(s=>logsOf(s.id).some(l=>(l.marks||[]).length)).map(s=>[s.id,s.name]):[];if(!opts.length)return"";
   const on=ui.mheat&&heatAllowed(m,ui.mheat)&&!tm;let extra="";
   if(on){const M=HEATM||heatMap(ui.mheat);const P=heatPages(M);const here=(P.find(x=>x[0]===pg)||[0,0])[1];const words=Object.keys(M).length;
-    extra=`<div class="hb-l"><span class="hwk hw1">مرة</span><span class="hwk hw2">مرتان</span><span class="hwk hw3">3+ مرات</span><span class="small muted">· في هذه الصفحة <b class="num">${here}</b> · في المصحف <b class="num">${words}</b> موضعاً</span></div>
+    extra=`<div class="hb-l"><span class="mlegend mt-t"><span class="dot"></span>تنبيه</span><span class="mlegend mt-l"><span class="dot"></span>تلقين</span><span class="small muted">الرقم الصغير = عدد مرات تكرار الملاحظة على الكلمة · في هذه الصفحة <b class="num">${here}</b> · في المصحف <b class="num">${words}</b> موضعاً</span></div>
     ${P.length?`<div class="hb-p"><span class="small muted">الصفحات الأكثر أخطاء:</span>${P.slice(0,8).map(([p,n])=>`<button class="chip-b ${p===pg?"on":""}" data-act="mPageGo" data-v="${p}">ص ${p} <span class="num">(${n})</span></button>`).join("")}</div>`:empty("لا أخطاء مسجّلة بعد.")}`}
   return `<div class="card heatbar ${on?"on":""}"><div class="row between" style="gap:8px;flex-wrap:wrap"><b>خريطة الأخطاء على المصحف</b>${m.role==="student"?(on?`<button class="btn sm" data-act="heatOff">إخفاء</button>`:`<button class="btn sm pri" data-act="heatGo" data-id="${m.id}">أظهر أخطائي</button>`):`<select id="m-heat" data-change="mHeat" style="max-width:220px"><option value="">— إيقاف —</option>${opts.map(([id,n])=>`<option value="${id}" ${ui.mheat===id?"selected":""}>${esc(n)}</option>`).join("")}</select>`}</div>${tm&&ui.mheat?`<p class="hint" style="margin-top:6px">تُخفى الخريطة أثناء وضع التسميع.</p>`:""}${extra}</div>`}
 /* ============ التقرير الشهري (إضافات) ============ */
@@ -706,9 +707,11 @@ async function snapLoad(){if(!UID)return false;const o=await idbGet("snap:"+UID)
 function swRegister(){if(!("serviceWorker" in navigator)||!(location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1"))return;navigator.serviceWorker.register("/sw.js").catch(()=>{})}
 /* ============ إشعارات تصل والمنصة مقفلة (Web Push) ============ */
 const b64u=s=>{const p="=".repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...b].map(c=>c.charCodeAt(0)))};
-const pushReady=()=>!!(CFG.vapidPublicKey&&"serviceWorker" in navigator&&"PushManager" in window&&SB&&MODE==="live");
+const pushReady=()=>!!("serviceWorker" in navigator&&"PushManager" in window&&SB&&MODE==="live"&&CFG.supabaseUrl);
+let VAPID_PUB="";
+async function vapidKey(){if(!VAPID_PUB)VAPID_PUB=CFG.vapidPublicKey||"";if(VAPID_PUB)return VAPID_PUB;try{const r=await fetch(String(CFG.supabaseUrl).replace(/\/$/,"")+"/functions/v1/send-push");if(!r.ok)return"";const j=await r.json();VAPID_PUB=j.publicKey||"";return VAPID_PUB}catch(e){return""}}
 async function pushSubscribe(){if(!pushReady())return;try{const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
-    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(CFG.vapidPublicKey)});const j=sub.toJSON();const m=me();if(!m)return;
+    if(!sub){const vk=await vapidKey();if(!vk)return;sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(vk)})}const j=sub.toJSON();const m=me();if(!m)return;
     const id=await sha1(j.endpoint);const{error}=await SB.from("push_subs").upsert({id,data:{endpoint:j.endpoint,keys:j.keys,memberId:m.id,ua:navigator.userAgent.slice(0,120),at:new Date().toISOString()}});if(error)console.error(error)}catch(e){console.error(e)}}
 async function pushUnsubscribe(){if(!pushReady())return;try{const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.getSubscription();if(!sub)return;const id=await sha1(sub.endpoint);await SB.from("push_subs").delete().eq("id",id);await sub.unsubscribe()}catch(e){}}
 async function sha1(t){const h=await crypto.subtle.digest("SHA-1",new TextEncoder().encode(t));return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("")}
