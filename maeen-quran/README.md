@@ -167,25 +167,17 @@ vercel deploy --prod
 - المدير يتنقّل بين المراحل من القائمة أعلى الصفحة. كل مرحلة لها لوحتها: الطلاب، الحلقات، المعلمون، البرامج، التقارير ولوحة المشرف، مع بطاقة «مقارنة المراحل» عند اختيار «كل المراحل».
 - البرنامج يمكن تخصيصه لمرحلة أو أكثر. ولوحة الشرف للطالب تكون داخل مرحلته، إلا إذا فعّلت «لوحة شرف واحدة لكل المراحل».
 
-## إشعارات الجوال والمنصة مقفلة (اختياري)
+## إشعارات الجوال والمنصة مقفلة
 
-بدون هذه الخطوات تعمل الإشعارات داخل المنصة وإشعارات الجهاز وهي مفتوحة. بعدها تصل للجوال والمنصة مقفلة، مثل التطبيقات.
+لا تحتاج أي مفاتيح يدوية: كلمة السر تُنشأ داخل قاعدة البيانات، ومفاتيح VAPID تنشئها الدالة بنفسها عند أول تشغيل.
 
-1. **أنشئ مفتاحي VAPID** مرة واحدة: من أي جهاز فيه Node شغّل `npx web-push generate-vapid-keys`، أو استخدم أي مولّد VAPID موثوق. يخرج لك مفتاح عام (Public) ومفتاح خاص (Private).
-2. **في `config.js`:** ضع المفتاح **العام** فقط في `vapidPublicKey`. المفتاح الخاص لا يوضع في الموقع أبداً.
-3. **في Supabase ← Edge Functions:** أنشئ دالة باسم `send-push`، والصق محتوى `supabase/functions/send-push/index.ts`، ثم **أطفئ** خيار Verify JWT (قاعدة البيانات هي التي تستدعيها بكلمة سر) واضغط Deploy.
-4. **في Edge Functions ← Secrets** أضف:
-   - `VAPID_PUBLIC_KEY` = المفتاح العام
-   - `VAPID_PRIVATE_KEY` = المفتاح الخاص
-   - `VAPID_SUBJECT` = `mailto:` متبوعاً بإيميلك
-   - `PUSH_SECRET` = كلمة سر طويلة عشوائية تخترعها
-5. **في SQL Editor** شغّل (بعد تشغيل `schema.sql`) مع وضع رابط مشروعك وكلمة السر نفسها:
+1. شغّل `schema.sql` (يُنشئ جدول الاشتراكات والإعدادات والمشغّلات).
+2. في Supabase ← Edge Functions أنشئ دالة باسم `send-push`، والصق محتوى `supabase/functions/send-push/index.ts`، ثم Deploy، ومن Settings أطفئ **Verify JWT** واحفظ.
+3. في SQL Editor شغّل مرة واحدة برابط مشروعك:
    ```sql
-   insert into public.push_settings (id, fn_url, secret)
-   values (1, 'https://YOUR-PROJECT.supabase.co/functions/v1/send-push', 'كلمة-السر-نفسها')
-   on conflict (id) do update set fn_url = excluded.fn_url, secret = excluded.secret;
+   update public.push_settings set fn_url = 'https://YOUR-PROJECT.supabase.co/functions/v1/send-push' where id = 1;
    ```
-   إذا ظهر خطأ عن `net`، فعّل إضافة **pg_net** من Database ← Extensions ثم أعد تشغيل `schema.sql`.
+4. افتح `https://YOUR-PROJECT.supabase.co/functions/v1/send-push` في المتصفح، وانسخ قيمة `publicKey` (مفتاح عام، ليس سراً) وضعها في `vapidPublicKey` داخل `config.js`.
 
 بعدها: كل مستخدم يضغط «تفعيل» في صفحة الإشعارات، فتصله: الرسائل، الغياب ومتابعة اليوم (للطالب وولي الأمر)، تقييم التسميع الصوتي، المواعيد المؤكدة، الاختبارات والشهادات، ولمنسوبي الحلقة طلبات التسجيل والمواعيد والتسميع الصوتي الجديد.
 
