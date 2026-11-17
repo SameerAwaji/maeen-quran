@@ -1,7 +1,8 @@
 // إرسال إشعارات الجوال (Web Push) عند الأحداث المهمة.
 // تستدعيها قاعدة البيانات تلقائياً، ولا يستدعيها الموقع.
-// الأسرار المطلوبة (Edge Functions → Secrets):
-//   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (مثل mailto:you@example.com), PUSH_SECRET
+// لا تحتاج أي أسرار يدوية: كلمة السر تُنشأ في قاعدة البيانات (push_settings)،
+// ومفاتيح VAPID تُنشأ هنا تلقائياً عند أول استدعاء وتُحفظ في push_settings.
+// انشرها مع إطفاء Verify JWT.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
 
@@ -27,9 +28,25 @@ const fmt = (iso: string) => {
   } catch { return iso; }
 };
 
+const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type, apikey, authorization, x-client-info", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
+async function settings() {
+  const { data } = await sb.from("push_settings").select("*").eq("id", 1).maybeSingle();
+  let st: any = data || {};
+  if (!st.vapid_public || !st.vapid_private) {
+    const k = webpush.generateVAPIDKeys();
+    await sb.from("push_settings").upsert({ id: 1, vapid_public: k.publicKey, vapid_private: k.privateKey });
+    const { data: d2 } = await sb.from("push_settings").select("*").eq("id", 1).maybeSingle();
+    st = d2 || { ...st, vapid_public: k.publicKey, vapid_private: k.privateKey };
+  }
+  return st;
+}
+
 Deno.serve(async (req) => {
-  if (req.method !== "POST") return new Response("ok");
-  const secret = Deno.env.get("PUSH_SECRET") || "";
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  const st = await settings();
+  // الموقع يطلب المفتاح العام فقط (ليس سراً)
+  if (req.method === "GET") return new Response(JSON.stringify({ publicKey: st.vapid_public }), { headers: { ...CORS, "Content-Type": "application/json" } });
+  const secret = st.secret || "";
   if (!secret || req.headers.get("x-push-secret") !== secret) return new Response("forbidden", { status: 403 });
   const { table, op, data: d = {}, old: o } = await req.json();
   const out: { to: string[]; title: string; body: string; url: string; tag: string }[] = [];
@@ -88,7 +105,7 @@ Deno.serve(async (req) => {
   }
 
   if (!out.length) return new Response("no-op");
-  webpush.setVapidDetails(Deno.env.get("VAPID_SUBJECT") || "mailto:admin@example.com", Deno.env.get("VAPID_PUBLIC_KEY")!, Deno.env.get("VAPID_PRIVATE_KEY")!);
+  webpush.setVapidDetails(Deno.env.get("VAPID_SUBJECT") || "mailto:noreply@maeen.com.sa", st.vapid_public, st.vapid_private);
   const { data: cfg } = await sb.from("config").select("data").eq("id", "main").maybeSingle();
   const brand = cfg?.data?.circleName || "";
   let sent = 0;
