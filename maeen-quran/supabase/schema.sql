@@ -55,6 +55,16 @@ create table if not exists public.sessions (
   circle_id text generated always as (data->>'circleId') stored,
   updated_at timestamptz not null default now());
 
+-- الرسائل بين الطلاب وأولياء الأمور والمعلمين والإدارة (لا يقرؤها إلا طرفاها)
+create table if not exists public.messages (
+  id text primary key, data jsonb not null default '{}'::jsonb,
+  from_id text generated always as (data->>'fromId') stored,
+  to_id text generated always as (data->>'toId') stored,
+  student_id text generated always as (data->>'studentId') stored,
+  updated_at timestamptz not null default now());
+create index if not exists messages_from_idx on public.messages(from_id);
+create index if not exists messages_to_idx on public.messages(to_id);
+
 create table if not exists public.tatt (
   id text primary key, data jsonb not null default '{}'::jsonb,
   teacher_id text generated always as (data->>'teacherId') stored,
@@ -150,6 +160,20 @@ language sql stable security definer set search_path = public as $$
     select 1 from public.members s join public.circles c on c.id = s.circle_id
     where s.id = sid and (c.teacher_id = public.my_id() or coalesce((public.me_row()).data->'circleIds','[]'::jsonb) ? c.id)) $$;
 
+-- ---------- المراحل والأقسام ----------
+-- مرحلة الطالب: من بياناته، وإلا من حلقته
+create or replace function public.student_div(sid text) returns text
+language sql stable security definer set search_path = public as $$
+  select coalesce(nullif(s.data->>'divisionId',''), nullif(c.data->>'divisionId',''), '')
+  from public.members s left join public.circles c on c.id = s.circle_id where s.id = sid $$;
+-- هل المرحلة ضمن مراحل المستخدم؟ (بدون مراحل مسندة = كل المراحل؛ المدير يرى الكل)
+create or replace function public.div_ok(d text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce(
+    public.my_role() = 'director'
+    or jsonb_array_length(coalesce((public.me_row()).data->'divisionIds','[]'::jsonb)) = 0
+    or coalesce((public.me_row()).data->'divisionIds','[]'::jsonb) ? coalesce(d,''), false) $$;
+
 create or replace function public.student_in_scope(sid text) returns boolean
 language plpgsql stable security definer set search_path = public as $$
 declare me public.members; sc text; s public.members;
@@ -157,7 +181,7 @@ begin
   if sid is null then return false; end if;
   me := public.me_row(); if me.id is null or not (me.role = any(public.staff_roles())) then return false; end if;
   sc := public.my_scope();
-  if sc = 'all' then return true; end if;
+  if sc = 'all' then return public.div_ok(public.student_div(sid)); end if;
   select * into s from public.members where id = sid;
   if not found then return false; end if;
   if s.teacher_id = me.id then return true; end if;
@@ -169,7 +193,7 @@ end $$;
 create or replace function public.circle_in_scope(cid text) returns boolean
 language sql stable security definer set search_path = public as $$
   select coalesce(cid is not null and cid <> '' and public.is_staff() and (
-    public.my_scope() = 'all'
+    (public.my_scope() = 'all' and public.div_ok((select c.data->>'divisionId' from public.circles c where c.id = cid)))
     or exists(select 1 from public.circles c where c.id = cid and c.teacher_id = public.my_id())
     or coalesce((public.me_row()).data->'circleIds','[]'::jsonb) ? cid), false) $$;
 
@@ -211,6 +235,8 @@ create or replace function public.members_insert_guard() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   if auth.uid() is null then return new; end if;               -- محرر SQL / مفتاح الخدمة
+  -- الحفظ يتم بـ upsert: إذا كان السجل موجوداً فهو تعديل تحكمه سياسة التعديل وحمايته
+  if exists(select 1 from public.members where id = new.id) then return new; end if;
   if public.has_perm('members.manage') then return new; end if;
   if new.data->>'uid' = auth.uid()::text then
     if exists(select 1 from public.members where uid = auth.uid()::text) then raise exception 'already registered'; end if;
@@ -232,8 +258,8 @@ end $$;
 
 create or replace function public.members_update_guard() returns trigger
 language plpgsql security definer set search_path = public as $$
-declare selfkeys text[] := array['name','phone','meetLink','navPref','updatedAt'];
-        protected text[] := array['uid','role','permOverrides','scopeOverride','attScopeOverride','childIds'];
+declare selfkeys text[] := array['name','phone','meetLink','navPref','photo','updatedAt'];
+        protected text[] := array['uid','role','permOverrides','scopeOverride','attScopeOverride','childIds','divisionIds'];
         k text;
 begin
   if auth.uid() is null then return new; end if;
@@ -269,6 +295,7 @@ language plpgsql security definer set search_path = public as $$
 declare sid text := new.data->>'studentId';
 begin
   if auth.uid() is null or public.has_perm('sessions.manage') then return new; end if;
+  if tg_op = 'INSERT' and exists(select 1 from public.sessions where id = new.id) then return new; end if;
   if new.data->>'status' <> 'requested' then raise exception 'only requests allowed'; end if;
   if not (sid = public.my_id() or public.is_parent_of(sid)) then raise exception 'not your student'; end if;
   if coalesce(new.data->>'circleId','') <> '' then raise exception 'not allowed'; end if;
@@ -279,12 +306,58 @@ create or replace function public.recits_guard() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   if auth.uid() is null or public.has_perm('recits.review') then return new; end if;
+  if tg_op = 'INSERT' and exists(select 1 from public.recits where id = new.id) then return new; end if;
   if tg_op = 'INSERT' then
     if new.data->>'studentId' <> public.my_id() then raise exception 'not allowed'; end if;
     new.data := new.data || '{"status":"pending"}'::jsonb;
     return new;
   end if;
   raise exception 'not allowed';
+end $$;
+
+-- من يحق له مراسلة من
+create or replace function public.can_message(target text) returns boolean
+language plpgsql stable security definer set search_path = public as $$
+declare me public.members; t public.members;
+begin
+  select * into me from public.members where uid = auth.uid()::text and status = 'active' limit 1;
+  if not found then return false; end if;
+  select * into t from public.members where id = target and status = 'active';
+  if not found or t.id = me.id then return false; end if;
+  if me.role = any(public.staff_roles()) then
+    if t.role = any(public.staff_roles()) then return true; end if;
+    if t.role = 'student' then return public.student_in_scope(t.id); end if;
+    if t.role = 'parent' then
+      return exists(select 1 from jsonb_array_elements_text(coalesce(t.data->'childIds','[]'::jsonb)) c where public.student_in_scope(c));
+    end if;
+    return false;
+  end if;
+  if me.role not in ('student','parent') or not (t.role = any(public.staff_roles())) then return false; end if;
+  if t.role in ('director','admin') then return true; end if;
+  return exists(
+    select 1 from public.members s
+    where s.role = 'student' and s.status = 'active'
+      and (s.id = me.id or (me.role = 'parent' and coalesce(me.data->'childIds','[]'::jsonb) ? s.id))
+      and (s.teacher_id = t.id
+        or exists(select 1 from public.circles c where c.id = s.circle_id and c.teacher_id = t.id)
+        or (coalesce(s.circle_id,'') <> '' and coalesce(t.data->'circleIds','[]'::jsonb) ? s.circle_id)));
+end $$;
+
+create or replace function public.messages_guard() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare k text[] := array['readAt','updatedAt'];
+begin
+  new.updated_at := now();
+  if auth.uid() is null then return new; end if;
+  if tg_op = 'INSERT' and exists(select 1 from public.messages where id = new.id) then return new; end if;
+  if tg_op = 'INSERT' then
+    if new.data->>'fromId' is distinct from public.my_id() then raise exception 'not allowed'; end if;
+    if length(coalesce(new.data->>'body','')) = 0 or length(new.data->>'body') > 4000 then raise exception 'invalid message'; end if;
+    new.data := (new.data - 'readAt') || jsonb_build_object('at', to_char(now() at time zone 'utc','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'));
+    return new;
+  end if;
+  if (new.data - k) is distinct from (old.data - k) then raise exception 'only read status can change'; end if;
+  return new;
 end $$;
 
 create or replace function public.touch_and_audit() returns trigger
@@ -308,21 +381,25 @@ drop trigger if exists tasks_upd on public.tasks;
 create trigger tasks_upd before update on public.tasks for each row execute function public.tasks_guard();
 drop trigger if exists sessions_ins on public.sessions;
 create trigger sessions_ins before insert or update on public.sessions for each row execute function public.sessions_guard();
+drop trigger if exists messages_ins on public.messages;
+create trigger messages_ins before insert or update on public.messages for each row execute function public.messages_guard();
 drop trigger if exists recits_ins on public.recits;
 create trigger recits_ins before insert or update on public.recits for each row execute function public.recits_guard();
 
 do $$ declare t text; begin
-  foreach t in array array['members','circles','config','programs','tasks','logs','progress','exams','certs','recits','notes','sessions','tatt'] loop
+  foreach t in array array['members','circles','config','programs','tasks','logs','progress','exams','certs','recits','notes','sessions','tatt','messages'] loop
     execute format('drop trigger if exists %I on public.%I', t||'_audit', t);
     execute format('create trigger %I before insert or update or delete on public.%I for each row execute function public.touch_and_audit()', t||'_audit', t);
     execute format('alter table public.%I enable row level security', t);
   end loop;
 end $$;
 alter table public.audit_log enable row level security;
+-- الرسائل خاصة بطرفيها، فلا تُنسخ إلى سجل التعديلات
+drop trigger if exists messages_audit on public.messages;
 
 -- ---------- السياسات (من يقرأ ومن يكتب) ----------
 do $$ declare t text; p record; begin
-  foreach t in array array['members','circles','config','programs','tasks','logs','progress','exams','certs','recits','notes','sessions','tatt','audit_log'] loop
+  foreach t in array array['members','circles','config','programs','tasks','logs','progress','exams','certs','recits','notes','sessions','tatt','messages','audit_log'] loop
     for p in select policyname from pg_policies where schemaname='public' and tablename=t loop
       execute format('drop policy %I on public.%I', p.policyname, t);
     end loop;
@@ -355,8 +432,8 @@ create policy config_select on public.config for select to authenticated using (
 -- اسم المنصة والألوان تظهر في صفحة الدخول قبل تسجيل الدخول (لا تحتوي أي بيانات شخصية)
 create policy config_public on public.config for select to anon using (id in ('main','ui'));
 create policy config_write on public.config for all to authenticated
-  using ((id = 'perms' and public.is_director()) or (id = 'ui' and public.has_perm('ui.customize')) or (id = 'main' and public.has_perm('settings.manage')))
-  with check ((id = 'perms' and public.is_director()) or (id = 'ui' and public.has_perm('ui.customize')) or (id = 'main' and public.has_perm('settings.manage')));
+  using ((id = 'perms' and public.is_director()) or (id = 'ui' and public.has_perm('ui.customize')) or (id = 'main' and public.has_perm('settings.manage')) or (id = 'plantpl' and public.has_perm('plans.edit')))
+  with check ((id = 'perms' and public.is_director()) or (id = 'ui' and public.has_perm('ui.customize')) or (id = 'main' and public.has_perm('settings.manage')) or (id = 'plantpl' and public.has_perm('plans.edit')));
 
 -- الحلقات والبرامج
 create policy circles_select on public.circles for select to authenticated using (public.is_active_user());
@@ -422,6 +499,11 @@ create policy sessions_update on public.sessions for update to authenticated usi
   public.has_perm('sessions.manage') or (data->>'status' = 'requested' and (data->>'studentId' = public.my_id() or public.is_parent_of(data->>'studentId'))));
 create policy sessions_delete on public.sessions for delete to authenticated using (public.has_perm('sessions.manage'));
 
+-- الرسائل
+create policy messages_select on public.messages for select to authenticated using (from_id = public.my_id() or to_id = public.my_id());
+create policy messages_insert on public.messages for insert to authenticated with check (from_id = public.my_id() and public.can_message(to_id));
+create policy messages_update on public.messages for update to authenticated using (to_id = public.my_id()) with check (to_id = public.my_id());
+
 -- حضور المعلمين
 create policy tatt_select on public.tatt for select to authenticated using (
   teacher_id = public.my_id() or public.has_perm('admin.dashboard') or public.has_perm('tatt.manage'));
@@ -454,11 +536,43 @@ begin
   order by 4 desc;
 end $$;
 
-grant execute on function public.leaderboard(date,date), public.has_director() to authenticated;
+-- لوحة الشرف داخل مرحلة واحدة
+create or replace function public.leaderboard_div(p_from date, p_to date, p_div text)
+returns table(id text, name text, track text, points int, new_pages numeric, t_pages numeric, rate int)
+language sql stable security definer set search_path = public as $$
+  select l.* from public.leaderboard(p_from, p_to) l
+  where coalesce(p_div,'') = '' or public.student_div(l.id) = p_div $$;
+grant execute on function public.leaderboard_div(date, date, text) to authenticated;
+
+-- ---------- تقدم تحدي الحلقة (مجموع فقط، بدون تفاصيل الطلاب) ----------
+create or replace function public.challenge_progress(p_circle text, p_kind text, p_from date, p_to date)
+returns table(total numeric, members int)
+language plpgsql stable security definer set search_path = public as $$
+declare me public.members;
+begin
+  select * into me from public.members where uid = auth.uid()::text and status = 'active' limit 1;
+  if not found then return; end if;
+  if p_circle <> 'all' and not (me.role = any(public.staff_roles())) and not exists(
+     select 1 from public.members s where s.role = 'student' and s.circle_id = p_circle
+       and (s.id = me.id or coalesce(me.data->'childIds','[]'::jsonb) ? s.id)) then return; end if;
+  return query
+  with st as (select m.id from public.members m where m.role = 'student' and m.status = 'active' and (p_circle = 'all' or m.circle_id = p_circle))
+  select (case p_kind
+      when 'tasks' then (select count(*) from public.tasks t where t.student_id in (select id from st)
+                          and coalesce((t.data->>'done')::boolean,false) and (t.data->>'date')::date between p_from and p_to)::numeric
+      when 'att' then (select count(*) from public.logs l where l.student_id in (select id from st)
+                          and l.data->>'attendance' in ('present','late') and (l.data->>'date')::date between p_from and p_to)::numeric
+      else (select coalesce(sum(coalesce(nullif(l.data->>'tPages','')::numeric,0) + coalesce(nullif(l.data->>'newPages','')::numeric,0)),0)
+              from public.logs l where l.student_id in (select id from st) and (l.data->>'date')::date between p_from and p_to)
+    end),
+    (select count(*)::int from st);
+end $$;
+
+grant execute on function public.leaderboard(date,date), public.has_director(), public.can_message(text), public.challenge_progress(text,text,date,date) to authenticated;
 
 -- ---------- التحديث المباشر ----------
 do $$ declare t text; begin
-  foreach t in array array['members','circles','config','programs','tasks','logs','progress','exams','certs','recits','notes','sessions','tatt'] loop
+  foreach t in array array['members','circles','config','programs','tasks','logs','progress','exams','certs','recits','notes','sessions','tatt','messages'] loop
     begin execute format('alter publication supabase_realtime add table public.%I', t);
     exception when duplicate_object then null; end;
   end loop;
@@ -479,3 +593,70 @@ drop policy if exists files_delete on storage.objects;
 create policy files_delete on storage.objects for delete to authenticated
   using (bucket_id = 'files' and ((storage.foldername(name))[1] = auth.uid()::text or public.is_director()));
 
+
+-- ---------- إشعارات تصل والمنصة مقفلة (Web Push) ----------
+create table if not exists public.push_subs (
+  id text primary key, data jsonb not null default '{}'::jsonb,
+  member_id text generated always as (data->>'memberId') stored,
+  updated_at timestamptz not null default now());
+alter table public.push_subs enable row level security;
+drop policy if exists push_own on public.push_subs;
+create policy push_own on public.push_subs for all to authenticated
+  using (member_id = public.my_id()) with check (member_id = public.my_id());
+
+-- إعدادات الإرسال (لا يقرؤها أحد من الموقع؛ تُضبط مرة واحدة من SQL Editor)
+create table if not exists public.push_settings (id int primary key default 1, fn_url text, secret text);
+alter table public.push_settings enable row level security;
+
+do $$ begin create extension if not exists pg_net; exception when others then null; end $$;
+
+create or replace function public.push_notify() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare st public.push_settings;
+begin
+  select * into st from public.push_settings where id = 1;
+  if st.fn_url is null or st.fn_url = '' or not exists(select 1 from public.push_subs) then return new; end if;
+  perform net.http_post(
+    url := st.fn_url,
+    body := jsonb_build_object('table', tg_table_name, 'op', tg_op, 'id', new.id, 'data', new.data,
+                               'old', case when tg_op = 'UPDATE' then old.data end),
+    headers := jsonb_build_object('Content-Type', 'application/json', 'x-push-secret', coalesce(st.secret, '')));
+  return new;
+exception when others then return new;
+end $$;
+
+do $$ declare t text; begin
+  foreach t in array array['messages','logs','recits','sessions','exams','certs','members'] loop
+    execute format('drop trigger if exists %I on public.%I', t||'_push', t);
+    execute format('create trigger %I after insert or update on public.%I for each row execute function public.push_notify()', t||'_push', t);
+  end loop;
+end $$;
+
+-- ---------- لوحة المالك: الجهات المشتركة (تُستخدم في نسختك الرئيسية فقط) ----------
+create table if not exists public.tenants (
+  id text primary key, data jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now());
+alter table public.tenants enable row level security;
+create or replace function public.is_platform_owner() returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce(public.is_director() and coalesce((select (data->>'ownerMode')::boolean from public.config where id = 'main'), false), false) $$;
+drop policy if exists tenants_owner on public.tenants;
+create policy tenants_owner on public.tenants for all to authenticated
+  using (public.is_platform_owner()) with check (public.is_platform_owner());
+
+-- تستدعيها نسخ الجهات: تُرجع حالة الاشتراك، وتحدّث إحصاءات الاستخدام (أعداد فقط)
+create or replace function public.tenant_ping(p_key text, p_students int default null, p_staff int default null, p_circles int default null, p_url text default null)
+returns jsonb language plpgsql volatile security definer set search_path = public as $$
+declare t public.tenants;
+begin
+  if coalesce(length(p_key), 0) < 20 then return jsonb_build_object('status', 'unknown'); end if;
+  select * into t from public.tenants where data->>'key' = p_key limit 1;
+  if not found then return jsonb_build_object('status', 'unknown'); end if;
+  update public.tenants set data = data || jsonb_build_object('lastPing', now(),
+      'stats', case when p_students is null then coalesce(data->'stats', '{}'::jsonb)
+               else jsonb_build_object('students', p_students, 'staff', p_staff, 'circles', p_circles, 'at', now()) end,
+      'seenUrl', coalesce(left(p_url, 200), data->>'seenUrl'))
+    where id = t.id;
+  return jsonb_build_object('status', coalesce(t.data->>'status', 'active'), 'expires', t.data->>'expires',
+                            'message', t.data->>'message', 'name', t.data->>'name');
+end $$;
+grant execute on function public.tenant_ping(text, int, int, int, text) to anon, authenticated;
