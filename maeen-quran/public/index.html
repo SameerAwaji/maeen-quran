@@ -963,6 +963,10 @@ body.app #offbar{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
 
 .tncard .card-h{margin-bottom:4px}.tn-n{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 6px;font-size:.88rem}.tn-n b{font-size:1.05rem}
 .codebox{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:.8rem;overflow:auto;white-space:pre;text-align:left}
+
+/* خريطة الأخطاء بنفس شكل التسميع */
+.hw{cursor:help;position:relative}.hw[data-n]::after{content:attr(data-n);position:absolute;top:-.55em;inset-inline-end:-.35em;font:700 10px/14px Tajawal,sans-serif;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:var(--red,#d32f2f);color:#fff;text-align:center;font-family:Tajawal,system-ui,sans-serif}
+.hw.mk-t[data-n]::after{background:#a87800}
 </style>
 </head>
 <body>
