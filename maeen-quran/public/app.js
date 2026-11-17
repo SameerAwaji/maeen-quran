@@ -1050,7 +1050,7 @@ const A={
   copyProgram:el=>copy(programReportText(el.dataset.id)),
   jdelMode:el=>{ui.jdel=ui.jdel===el.dataset.sid?null:el.dataset.sid;render()},
   jdelAll:el=>{const s=get("members",el.dataset.sid);const n=Object.keys((s&&s.hifzMap)||{}).length;if(!n)return;openModal("حذف كل علامات الخريطة",`<p>سيتم مسح علامات <b class="num">${n}</b> جزء من خريطة ${esc(s.name)}.</p><p class="hint">لا يمكن التراجع عن هذا الحذف.</p>`,"jdelAll",{sid:s.id},"تأكيد الحذف")},
-  juz:el=>{const s=get("members",el.dataset.sid);const mp={...(s.hifzMap||{})};const j=el.dataset.j;if(ui.jdel===s.id){if(mp[j]==null)return;delete mp[j];patch("members",s.id,{hifzMap:mp});if(!Object.keys(mp).length)ui.jdel=null;return}const nx={undefined:"m",m:"x",x:"r",r:undefined}[mp[j]];if(nx)mp[j]=nx;else delete mp[j];patch("members",s.id,{hifzMap:mp})},
+  juz:el=>{const s=get("members",el.dataset.sid);const mp={...(s.hifzMap||{})};const j=el.dataset.j;if(ui.jdel===s.id){if(mp[j]==null)return;delete mp[j];patch("members",s.id,{hifzMap:mp});if(!Object.keys(mp).length)ui.jdel=null;return}const nx={undefined:"x",m:"r",x:"r",r:undefined}[mp[j]];if(nx)mp[j]=nx;else delete mp[j];patch("members",s.id,{hifzMap:mp})},
   newExam:el=>examForm(null,el.dataset.sid),
   editExam:el=>examForm(get("exams",el.dataset.id)),
   delExam:el=>{del("exams",el.dataset.id);closeModal()},
@@ -1404,12 +1404,12 @@ function startDemo(){
 const JUZ_NAMES=["الم","سيقول","تلك الرسل","لن تنالوا","والمحصنات","لا يحب الله","وإذا سمعوا","ولو أننا","قال الملأ","واعلموا","يعتذرون","وما من دابة","وما أبرئ","ربما","سبحان","قال ألم","اقترب","قد أفلح","وقال الذين","أمن خلق","اتل ما أوحي","ومن يقنت","وما لي","فمن أظلم","إليه يرد","حم","قال فما خطبكم","قد سمع","تبارك","عم"];
 const JST={m:["محفوظ","jm"],x:["متقن","jx"],r:["يحتاج مراجعة","jr"]};
 function juzMapHTML(s,staff){
-  const mp=s.hifzMap||{};const cnt={m:0,x:0,r:0};Object.values(mp).forEach(v=>{if(cnt[v]!=null)cnt[v]++});
+  const mp=s.hifzMap||{};const cnt={x:0,r:0};Object.values(mp).forEach(v=>{const k=v==="m"?"x":v;if(cnt[k]!=null)cnt[k]++});
   const isT=s.track==="tilawa";
   const dm=staff&&ui.jdel===s.id;const any=Object.keys(mp).length;
-  return `<div class="card jmap ${dm?"jdel-on":""}"><div class="card-h"><h2>${isT?"خريطة التلاوة":"خريطة الحفظ"}</h2>${staff?`<div class="row jtools"><button class="btn sm ${dm?"danger":""}" data-act="jdelMode" data-sid="${s.id}" aria-pressed="${dm}" ${any||dm?"":"disabled"}>${dm?"إيقاف الحذف":"وضع الحذف"}</button><button class="btn sm ghost danger" data-act="jdelAll" data-sid="${s.id}" ${any?"":"disabled"}>حذف الكل</button></div>`:""}</div>${dm?`<div class="jdel-bar">وضع الحذف مفعّل: اضغط أي جزء لمسح علامته. اضغط «إيقاف الحذف» للعودة.</div>`:""}<div class="legend" style="margin-bottom:10px">${Object.entries(JST).map(([k,[l,c]])=>`<span><i class="jdot ${c}"></i>${l} (${cnt[k]})</span>`).join("")}</div>
-  <div class="jgrid">${Array.from({length:30},(_,i)=>{const j=i+1,v=mp[j];return `<button class="jc ${v?JST[v][1]:""}" ${staff?`data-act="juz" data-sid="${s.id}" data-j="${j}"`:"disabled"} title="الجزء ${j}${v?": "+JST[v][0]:""}"><b class="num">${j}</b><span>${JUZ_NAMES[i]}</span></button>`}).join("")}</div>
-  ${staff?`<p class="hint" style="margin-top:8px">اضغط الجزء لتغيير حالته: محفوظ ← متقن ← يحتاج مراجعة ← غير محفوظ.</p>`:""}</div>`;
+  return `<div class="card jmap ${dm?"jdel-on":""}"><div class="card-h"><h2>${isT?"خريطة التلاوة":"خريطة الحفظ"}</h2>${staff?`<div class="row jtools"><button class="btn sm ${dm?"danger":""}" data-act="jdelMode" data-sid="${s.id}" aria-pressed="${dm}" ${any||dm?"":"disabled"}>${dm?"إيقاف الحذف":"وضع الحذف"}</button><button class="btn sm ghost danger" data-act="jdelAll" data-sid="${s.id}" ${any?"":"disabled"}>حذف الكل</button></div>`:""}</div>${dm?`<div class="jdel-bar">وضع الحذف مفعّل: اضغط أي جزء لمسح علامته. اضغط «إيقاف الحذف» للعودة.</div>`:""}<div class="legend" style="margin-bottom:10px">${Object.entries(JST).filter(([k])=>k!=="m").map(([k,[l,c]])=>`<span><i class="jdot ${c}"></i>${l} (${cnt[k]})</span>`).join("")}</div>
+  <div class="jgrid">${Array.from({length:30},(_,i)=>{const j=i+1,v=mp[j]==="m"?"x":mp[j];return `<button class="jc ${v?JST[v][1]:""}" ${staff?`data-act="juz" data-sid="${s.id}" data-j="${j}"`:"disabled"} title="الجزء ${j}${v?": "+JST[v][0]:""}"><b class="num">${j}</b><span>${JUZ_NAMES[i]}</span></button>`}).join("")}</div>
+  ${staff?`<p class="hint" style="margin-top:8px">اضغط الجزء لتغيير حالته: متقن ← يحتاج مراجعة ← بدون علامة.</p>`:""}</div>`;
 }
 
 /* ============ الاختبارات ============ */
