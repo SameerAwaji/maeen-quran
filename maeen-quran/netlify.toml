@@ -1,3 +1,4 @@
+# يُقرأ هذا الملف إذا كان «Base directory» في Netlify هو maeen-quran
 [build]
-  publish = "maeen-quran/public"
+  publish = "public"
   command = ""
