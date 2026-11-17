@@ -9,7 +9,7 @@ window.APP_CONFIG = {
   // يجب أن يطابق ACCOUNT_EMAIL_DOMAIN في دالة create-account.
   usernameDomain: "s.maeen.com.sa",
   // (اختياري) إشعارات الجوال والمنصة مقفلة: المفتاح العام VAPID (انظر README)
-  vapidPublicKey: "",
+  vapidPublicKey: "BGguBmXsHJ2N07Id78uxvtzRE15ToYa8MQjB316NOLEKIvCnRL6IR4dWddVAkZCUAyMWpJNm6Ed9Jsh8c8Hojlo",
   // (لنسخ الجهات فقط) ربط النسخة بلوحة المالك: يُنسخ من «لوحة المالك ← إعدادات الربط»
   // license: { server: "", anonKey: "", key: "" },
 };
