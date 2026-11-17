@@ -1,0 +1,10 @@
+KFGQPC Uthmanic Script HAFS (v1 OTF, v3.0 TTF)
+© King Fahd Glorious Quran Printing Complex — https://fonts.qurancomplex.gov.sa/
+Free to use, copy and distribute; may not be sold or modified (see the license embedded in the font files).
+
+mushaf.json: words, pages, lines and marks of the Hafs Madinah muṣḥaf, derived from the
+quran.ws "quran-text" dataset (@quran.ws/text), licensed CC BY 4.0 — https://github.com/quran-ws/quran-text
+
+Exact page rendering (QCF4): page JSON (MIT) and the QCF4 Madinah 1441 fonts by King Fahd Complex
+(WOFF2 version by Ahmad ElGharib) are loaded at runtime from the quran-qcf4 npm package via jsDelivr
+(https://github.com/MohamadHajjRabee/quran-qcf4). The fonts are not hosted or redistributed by this site.

@@ -1,0 +1,3 @@
+[build]
+  publish = "maeen-quran/public"
+  command = ""
