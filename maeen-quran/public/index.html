@@ -1311,6 +1311,15 @@ body.free-edit main,body.free-edit header.top,body.free-edit .tabbar{user-select
 .kh-ck{width:28px;height:28px;border-radius:8px;border:2px solid var(--line);background:var(--surface);color:#fff;font-weight:800;cursor:pointer}.kh-r.ok .kh-ck{background:var(--ok);border-color:var(--ok)}
 @media (max-width:759px){.kh-h{display:none}.kh-r{grid-template-columns:34px 1fr 34px;grid-template-areas:"n d c" "n f c" "n t c"}.kh-r>span:nth-child(1){grid-area:n}.kh-r>span:nth-child(2){grid-area:d;font-weight:700}.kh-r>span:nth-child(3){grid-area:f}.kh-r>span:nth-child(3)::before{content:"من: ";color:var(--muted)}.kh-r>span:nth-child(4){grid-area:t}.kh-r>span:nth-child(4)::before{content:"إلى: ";color:var(--muted)}.kh-r>span:nth-child(5){display:none}.kh-r>span:nth-child(6){grid-area:c}}
 .app-stack .kh-h{display:none}.app-stack .kh-r{grid-template-columns:34px 1fr 34px;grid-template-areas:"n d c" "n f c" "n t c"}.app-stack .kh-r>span:nth-child(1){grid-area:n}.app-stack .kh-r>span:nth-child(2){grid-area:d;font-weight:700}.app-stack .kh-r>span:nth-child(3){grid-area:f}.app-stack .kh-r>span:nth-child(3)::before{content:"من: ";color:var(--muted)}.app-stack .kh-r>span:nth-child(4){grid-area:t}.app-stack .kh-r>span:nth-child(4)::before{content:"إلى: ";color:var(--muted)}.app-stack .kh-r>span:nth-child(5){display:none}.app-stack .kh-r>span:nth-child(6){grid-area:c}
+
+#fe-panel .fe-rg{display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:6px;font-size:.76rem;margin:3px 0}#fe-panel .fe-rg input[type=range]{width:100%}#fe-panel .fe-rg b{font-size:.7rem;min-width:44px;text-align:center}#fe-panel .fe-rg input[type=color]{width:30px;height:22px;padding:0;border:0}
+main h2[data-ic]::before,main .card-h h3[data-ic]::before,main .card>h3[data-ic]::before{transform:translate(var(--icx,0px),var(--icy,0px))}
+main .card:hover h2[data-ic]::before,main .card:hover .card-h h3[data-ic]::before{transform:translate(var(--icx,0px),var(--icy,0px)) rotate(-8deg) scale(1.08)}
+main .stat[data-ic]::after{transform:translate(var(--icx,0px),calc(-50% + var(--icy,0px)))}
+main .stat[data-ic]:hover::after{transform:translate(var(--icx,0px),calc(-50% + var(--icy,0px) - 3px)) rotate(-6deg)}
+main .stat[data-ic]{padding-inline-end:calc(var(--ics,42px) + 24px)}
+
+.zd-trash{margin-top:12px;padding:10px;border:1px dashed var(--line);border-radius:14px;display:grid;gap:6px}.zd-tr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;background:var(--surface-2)}.zd-tr span{text-decoration:line-through;color:var(--muted)}
 </style>
 </head>
 <body>
