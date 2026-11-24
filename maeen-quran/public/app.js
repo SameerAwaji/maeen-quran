@@ -1118,8 +1118,8 @@ const A={
   fePart:el=>{const src=document.querySelector("#fe-panel .fe-src");const col=(document.querySelector("#fe-panel .fe-pc")||{}).value||"#f5c547";const v=feVal();const parts=[...(v.parts||[])];
     if(el.dataset.k==="digits"){const i=parts.findIndex(p=>p.re==="digits");const np={re:"digits",c:col};if(i>=0)parts[i]=np;else parts.push(np)}
     else{const a=src?src.selectionStart:0,b=src?src.selectionEnd:0;const t=src?src.value.slice(a,b):"";if(!t.trim()){toast("حدّد جزءاً من النص أولاً داخل المربع","err");return}const i=parts.findIndex(p=>p.s===t);const old=i>=0?parts[i]:{s:t};const np=el.dataset.k==="b"?{...old,fw:old.fw?"":800}:{...old,c:col};if(i>=0)parts[i]=np;else parts.push(np)}
-    setFree(feKey(),{parts})},
-  fePartDel:el=>{const v=feVal();const parts=[...(v.parts||[])];parts.splice(+el.dataset.i,1);setFree(feKey(),{parts})},
+    setFreeOne({parts})},
+  fePartDel:el=>{const v=feVal();const parts=[...(v.parts||[])];parts.splice(+el.dataset.i,1);setFreeOne({parts})},
   feMin:()=>{ui.feMin=!ui.feMin;feApplyText()},
 
   hbEdit:el=>{ui.homeEdit=el.dataset.g||null;if(!ui.homeEdit&&!ui.freeEdit)ui.editDev=null;render()},
@@ -1136,6 +1136,9 @@ const A={
   dzSet:el=>setDesign({[el.dataset.k]:el.dataset.v}),
   dzTpl:el=>{const t=DESIGN_TPLS.find(x=>x[0]===el.dataset.v);if(t)setDesign({...t[3],tpl:t[0]},true)},
   dzReset:()=>setDesign({tpl:"maeen"},true),
+  dzRole:el=>{const v=el.dataset.v;if(!v)ui.dzRoles=[];else{const S=Array.isArray(ui.dzRoles)?ui.dzRoles.slice():[];const i=S.indexOf(v);if(i>=0)S.splice(i,1);else S.push(v);ui.dzRoles=S}render()},
+  dzRoleClr:()=>{const b=brand();const cur=b.design||{};const BR={...(cur.byRole||{})};(ui.dzRoles||[]).forEach(r=>delete BR[r]);saveUi({brand:{...b,design:{...cur,byRole:BR}}});toast("أُزيل التخصيص الخاص")},
+  feRoleSet:el=>{const v=el.dataset.v;if(v==="one")ui.feRoles=null;else if(v==="all")ui.feRoles="all";else if(v==="pick")ui.feRoles=Array.isArray(ui.feRoles)?ui.feRoles:[];else{const S=Array.isArray(ui.feRoles)?ui.feRoles.slice():[];const i=S.indexOf(v);if(i>=0)S.splice(i,1);else S.push(v);ui.feRoles=S}feApplyText()},
   dzComp:el=>{ui.dzComp=el.dataset.v;render()},
   dzcSet:el=>setComp(el.dataset.c,el.dataset.p,el.dataset.v),
   dzcClr:el=>setComp(el.dataset.c,el.dataset.p,""),
@@ -1929,7 +1932,7 @@ document.addEventListener("keydown",e=>{const g=e.target.closest&&e.target.close
   const row=g.closest(".crow"),list=row.parentElement;const keys=[...list.querySelectorAll(":scope > .crow")].map(r=>r.dataset.key);const i=keys.indexOf(row.dataset.key),j=i+(e.key==="ArrowUp"?-1:1);if(j<0||j>=keys.length)return;[keys[i],keys[j]]=[keys[j],keys[i]];commitSort(list,keys,row.dataset.key)},true);
 const moveBtns=(act,attrs,i,len)=>`<button class="btn ghost sm" data-act="${act}" ${attrs} data-n="-1" ${i===0?"disabled":""} aria-label="لأعلى">↑</button><button class="btn ghost sm" data-act="${act}" ${attrs} data-n="1" ${i===len-1?"disabled":""} aria-label="لأسفل">↓</button>`;
 /* ============ الأشكال والقوالب: تخصيص الحواف والأحجام والمسافات والزخارف ============ */
-const DESIGN_DEF={icStyle:"soft",icColor:"",icSize:34,icRad:30,icStroke:2,icHead:true,icStat:true,tpl:"maeen",rCard:22,rBtn:12,rInput:10,pill:"round",shadow:"soft",border:1,density:"normal",width:1120,appWidth:640,statMin:130,statNum:1.45,cols:"auto",statBar:true,hero:"poster",mosque:true,moon:true,heroPad:22,top:"white",stripe:true,bg:"stars",bgOp:6,marker:"square",btn:"gradient",tab:"gradient",fs:16,css:""};
+const DESIGN_DEF={icStyle:"soft",icColor:"",icSize:42,icRad:30,icStroke:2,icHead:true,icStat:true,tpl:"maeen",rCard:22,rBtn:12,rInput:10,pill:"round",shadow:"soft",border:1,density:"normal",width:1120,appWidth:640,statMin:130,statNum:1.45,cols:"auto",statBar:true,hero:"poster",mosque:true,moon:true,heroPad:22,top:"white",stripe:true,bg:"stars",bgOp:6,marker:"square",btn:"gradient",tab:"gradient",fs:16,css:""};
 const DESIGN_TPLS=[
   ["maeen","بوستر مَعين","ترحيب أزرق بهلال ومسجد، حواف ناعمة، نقش نجوم",{}],
   ["classic","كلاسيكي هادئ","ترحيب فاتح بنقش خفيف، حواف متوسطة",{rCard:14,rBtn:9,rInput:8,hero:"simple",bg:"none",marker:"diamond",btn:"flat",tab:"soft"}],
@@ -1938,7 +1941,8 @@ const DESIGN_TPLS=[
   ["minimal","بسيط جداً","بلا زخارف ولا نقوش، مساحات واسعة",{rCard:16,rBtn:10,shadow:"none",hero:"plain",mosque:false,moon:false,bg:"none",marker:"none",btn:"flat",tab:"soft",stripe:false,density:"roomy"}],
   ["header","شريط علوي ملوّن","الشريط العلوي بلون المنصة، وترحيب أزرق",{top:"primary",stripe:false,bg:"stars"}]
 ];
-function design(){const d={...DESIGN_DEF,...((brand().design)||{})};return d}
+function dzRoleNow(){if(ui.view==="custom"&&Array.isArray(ui.dzRoles)&&ui.dzRoles.length)return ui.dzRoles[0];try{const m=me();return m&&m.role}catch(e){return null}}
+function design(){const b=(brand().design)||{};const d={...DESIGN_DEF,...b};const r=dzRoleNow();const o=r&&b.byRole&&b.byRole[r];if(o){const x={...d,...o};x.free=d.free;x.byRole=b.byRole;x.icImgs=d.icImgs;return x}return d}
 const dzNum=(v,a,b,def)=>{v=Number(v);return isFinite(v)?Math.min(b,Math.max(a,v)):def};
 function dzPattern(kind,op){const o=(dzNum(op,0,30,6)/100).toFixed(2);const c="%2324406f";
   if(kind==="dots")return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Ccircle cx='13' cy='13' r='1.6' fill='${c}' fill-opacity='${o}'/%3E%3C/svg%3E")`;
@@ -1984,7 +1988,14 @@ body.app main.wrap{max-width:${dzNum(d.appWidth,420,900,640)}px}
   c+=compCSS(d.comp);
   if(d.css)c+=String(d.css).replace(/<\/?style|@import|javascript:/gi,"").slice(0,20000);
   return c}
-function setDesign(p,replace){const b=brand();const next=replace?{...p}:{...(b.design||{}),...p,tpl:"custom"};saveUi({brand:{...b,design:next}})}
+function setDesign(p,replace){const b=brand();const cur=b.design||{};const keep={};["free","byRole","icImgs"].forEach(k=>{if(cur[k]!==undefined)keep[k]=cur[k]});
+  const RS=ui.view==="custom"&&Array.isArray(ui.dzRoles)&&ui.dzRoles.length&&!("free" in p)&&!("byRole" in p)?ui.dzRoles:null;
+  if(RS){const BR={...(cur.byRole||{})};const q={...p};delete q.icImgs;RS.forEach(r=>{BR[r]=replace?{...q}:{...(BR[r]||{}),...q,tpl:"custom"}});const nx={...cur,byRole:BR};if(p.icImgs)nx.icImgs=p.icImgs;saveUi({brand:{...b,design:nx}});return}
+  const next=replace?{...keep,...p}:{...cur,...p,tpl:"custom"};saveUi({brand:{...b,design:next}})}
+function dzRolesHTML(){const sel=Array.isArray(ui.dzRoles)?ui.dzRoles:[];const BR=((brand().design)||{}).byRole||{};const rs=["director","supervisor","teacher","assistant","examiner","student","parent"].filter(x=>ROLE[x]);
+  return `<div class="card dz-scope"><div class="card-h"><h2>نطاق التعديل</h2>${sel.length?`<button class="btn sm" data-act="dzRoleClr">إزالة تخصيص ${sel.length>1?"الأدوار المحددة":"هذا الدور"}</button>`:""}</div><p class="hint">اختر «كل الأدوار» ليكون التعديل عاماً، أو اختر دوراً أو أكثر ليكون التصميم خاصاً بهم فقط (يتغلّب على العام). النقطة الذهبية = دور له تخصيص خاص.</p>
+  <div class="dz-rchips"><button class="${!sel.length?"on":""}" data-act="dzRole" data-v="">كل الأدوار</button>${rs.map(r=>`<button class="${sel.includes(r)?"on":""}" data-act="dzRole" data-v="${r}">${esc(ROLE[r])}${BR[r]&&Object.keys(BR[r]).length?`<i class="dz-dot"></i>`:""}</button>`).join("")}</div>
+  <small class="muted">${sel.length?`التعديلات تحت تُطبّق الآن على: <b>${sel.map(r=>esc(ROLE[r])).join("، ")}</b> — والمعاينة تعرض تصميم «${esc(ROLE[sel[0]])}».`:"التعديلات تحت تُطبّق على كل الأدوار."}</small></div>`}
 function dzRange(k,l,min,max,step,unit,hint){const d=design();const v=d[k];return `<label class="dz-row"><span class="dz-l">${l}${hint?`<small class="muted">${hint}</small>`:""}</span><input type="range" min="${min}" max="${max}" step="${step||1}" value="${esc(String(v))}" data-change="dz" data-k="${k}" data-num="1" oninput="this.nextElementSibling.textContent=this.value+'${unit||""}'"><b class="dz-v num">${esc(String(v))}${unit||""}</b></label>`}
 function dzSeg(k,l,opts){const d=design();return `<div class="dz-row"><span class="dz-l">${l}</span><div class="seg modeseg dz-seg">${opts.map(([v,t])=>`<button data-act="dzSet" data-k="${k}" data-v="${esc(String(v))}" class="${String(d[k])===String(v)?"on":""}">${t}</button>`).join("")}</div></div>`}
 function dzTog(k,l){const d=design();return `<label class="switch" style="border:0;padding:4px 0"><span>${l}</span><input type="checkbox" data-change="dzb" data-k="${k}" ${d[k]?"checked":""}></label>`}
@@ -1993,12 +2004,12 @@ function designTabHTML(){const d=design();
   const prev=`<div class="dz-prev"><div class="hero greet pattern"><div><div class="verse">«خيرُكم مَن تعلَّم القرآنَ وعلَّمه»</div><h1>السلام عليكم، عبدالله</h1><div class="date">معاينة مباشرة للتصميم</div></div><div class="row"><button class="btn pri" type="button">زر أساسي</button><button class="btn" type="button">زر ثانوي</button></div></div>
   <div class="stats"><div class="stat"><b class="num">12</b><span>طالب</span></div><div class="stat"><b class="num">88%</b><span>الحضور</span></div><div class="stat"><b class="num">34</b><span>وجه محفوظ</span></div></div>
   <div class="grid g2"><div class="card"><div class="card-h"><h2>عنوان بطاقة</h2><span class="pill p-acc">شارة</span></div><p class="muted small">نص توضيحي داخل البطاقة.</p><input placeholder="حقل إدخال"></div><div class="card"><div class="card-h"><h2>بطاقة ثانية</h2></div><div class="row"><span class="pill">حاضر</span><span class="pill p-yel">متأخر</span></div></div></div></div>`;
-  return `<div class="card"><div class="card-h"><h2>القوالب الجاهزة</h2><button class="btn sm" data-act="dzReset">الرجوع للافتراضي</button></div><p class="hint">اختر قالباً ثم عدّل أي تفصيل تحت. التعديلات تظهر فوراً كمعاينة، واضغط «حفظ التعديلات» لتظهر للجميع.</p><div class="dz-tpls">${tpls}</div></div>
+  return dzRolesHTML()+`<div class="card"><div class="card-h"><h2>القوالب الجاهزة</h2><button class="btn sm" data-act="dzReset">الرجوع للافتراضي</button></div><p class="hint">اختر قالباً ثم عدّل أي تفصيل تحت. التعديلات تظهر فوراً كمعاينة، واضغط «حفظ التعديلات» لتظهر للجميع.</p><div class="dz-tpls">${tpls}</div></div>
   ${dzMyHTML()}
   <div class="card"><div class="card-h"><h2>الأيقونات</h2></div><p class="hint">شكل ولون أيقونات العناوين والإحصاءات. لتغيير أيقونة عنصر معيّن: «تحريك العناصر» ← اضغط العنوان ← قسم «الأيقونة».</p>
   ${dzSeg("icStyle","النمط",[["soft","ناعم"],["solid","مصمت"],["line","إطار"],["plain","بدون خلفية"],["off","إيقاف"]])}
   <div class="dz-row"><span class="dz-l">اللون</span><div class="row" style="gap:6px"><input type="color" value="${okCol(d.icColor)||"#1fa6c6"}" data-change="dz" data-k="icColor" class="${okCol(d.icColor)?"":"dz-unset"}"><button type="button" class="btn sm ghost" data-act="dzSet" data-k="icColor" data-v="">تلقائي</button><span class="row" style="gap:4px">${["#1fa6c6","#24406f","#f0a91e","#21875a","#7c4dbe","#c2453b"].map(c=>`<button type="button" class="btn sm" style="width:22px;height:22px;padding:0;border-radius:50%;background:${c};border:2px solid ${d.icColor===c?"var(--ink)":"transparent"}" data-act="dzSet" data-k="icColor" data-v="${c}" title="${c}"></button>`).join("")}</span></div></div>
-  ${dzRange("icSize","الحجم",20,56,1,"px")}${dzRange("icRad","الاستدارة",0,50,1,"%","0 مربع · 50 دائرة")}${dzRange("icStroke","سُمك الخط",1,3,0.25,"")}
+  ${dzRange("icSize","الحجم",20,64,1,"px")}${dzRange("icRad","الاستدارة",0,50,1,"%","0 مربع · 50 دائرة")}${dzRange("icStroke","سُمك الخط",1,3,0.25,"")}
   ${dzTog("icHead","أيقونات العناوين")}${dzTog("icStat","أيقونات مربعات الإحصاء")}
   <div class="dz-icprev">${["users","halaqa","book","clock","award","chart","trophy"].map(k=>`<span style='--ic:${dicURL(k,icFg())}'></span>`).join("")}</div></div>
   <div class="dz-layout"><div class="stack" style="gap:16px">
@@ -2073,7 +2084,9 @@ const feKey=()=>feScope()==="dev"?feDevKey(ui.feSel):ui.feSel;
 const feSet=()=>ui.feMulti&&ui.feMulti.length?ui.feMulti:(ui.feSel?[ui.feSel]:[]);
 const feKeyOf=b=>feScope()==="dev"?feDevKey(b):b;
 const feValOf=b=>{const F=design().free||{};return {...(F[b]||{}),...(F[feDevKey(b)]||{})}};
-function setFreeMany(fn){const d=design();const F={...(d.free||{})};feSet().forEach(b=>{const k=feKeyOf(b);const patch=fn(b,feValOf(b));if(k===b){["@m","@d"].forEach(sx=>{const dk=b.replace("|",sx+"|");if(F[dk]){const dc={...F[dk]};Object.keys(patch).forEach(x=>{if(x in dc){if(patch[x]===""||patch[x]==null)delete dc[x];else dc[x]=patch[x]}});F[dk]=dc}})}const cur={...(F[k]||{}),...patch};Object.keys(cur).forEach(x=>{if(cur[x]===""||cur[x]==null||cur[x]===false||(cur[x]===0&&(x==="x"||x==="y")))delete cur[x]});if(Object.keys(cur).length)F[k]=cur;else delete F[k]});setDesign({free:F})}
+function feRoleKeys(b){const i=b.indexOf(":");const R=b.slice(0,i);const T=ui.feRoles==="all"?Object.keys(ROLE):(Array.isArray(ui.feRoles)?ui.feRoles:[]);return [b,...T.filter(t=>t!==R).map(t=>t+b.slice(i))]}
+const setFreeOne=p=>setFreeMany(b=>b===ui.feSel?p:{});
+function setFreeMany(fn){const d=design();const F={...(d.free||{})};feSet().forEach(b0=>{const patch0=fn(b0,feValOf(b0));if(!Object.keys(patch0).length)return;feRoleKeys(b0).forEach(b=>{const k=feKeyOf(b);const patch=patch0;if(k===b){["@m","@d"].forEach(sx=>{const dk=b.replace("|",sx+"|");if(F[dk]){const dc={...F[dk]};Object.keys(patch).forEach(x=>{if(x in dc){if(patch[x]===""||patch[x]==null)delete dc[x];else dc[x]=patch[x]}});F[dk]=dc}})}const cur={...(F[k]||{}),...patch};Object.keys(cur).forEach(x=>{if(cur[x]===""||cur[x]==null||cur[x]===false||(cur[x]===0&&(x==="x"||x==="y")))delete cur[x]});if(Object.keys(cur).length)F[k]=cur;else delete F[k]})});setDesign({free:F})}
 const feElOf=b=>{const p=b.split("|").slice(1).join("|");return feOkPath(p)?document.querySelector(p):null};
 const feVal=()=>{const F=design().free||{};return {...(F[ui.feSel]||{}),...(F[feDevKey(ui.feSel)]||{})}};
 (function(){let lastM=innerWidth<760;addEventListener("resize",()=>{const m=isMobV();if(m!==lastM){lastM=m;try{render()}catch(e){}}});})();
@@ -2129,7 +2142,7 @@ function previewBar(){const r=realMe();if(!r||r.role!=="director")return"";const
 function asApply(id){Object.assign(ui,{asId:id||null,view:null,homeEdit:null,feSel:null,feMulti:null,editDev:null,circle:"all",teacher:"all",track:"all",q:"",sid:null,cid:null,pid:null,rsid:null,kid:null,mstu:"",stab:"plan",div:"all",npanel:false,tasmee:false,mheat:null});const m=me();const L=typeof divLock==="function"?divLock(m):null;if(L&&L.length===1)ui.div=L[0];closeModal();render();scrollTo(0,0)}
 function asRole(r){const R=realMe();const list=S.members.filter(x=>x.status==="active"&&x.role===r&&(!R||x.id!==R.id));if(!list.length){asApply("pv-"+r);toast("لا يوجد عضو بهذا الدور بعد — تعرض الواجهة كمعاينة فارغة");return}
   const score=x=>r==="teacher"?S.members.filter(s=>s.teacherId===x.id).length:r==="parent"?(x.childIds||[]).length:r==="student"?S.tasks.filter(t=>t.studentId===x.id).length:0;list.sort((a,b)=>score(b)-score(a));asApply(list[0].id)}
-setTimeout(()=>{["fePos","feMin","feIc","feSizeClr","fePart","fePartDel","devSet","hbScope","feScopeSet","asPick","asGo","asRole","asExit","feToggle","feNudge","feFs","feFw","feClr","feHide","feReset","feClose","hbEdit","hbMove","hbHide","hbH0","hbAdd","hbEditC","hbDelC"].forEach(k=>{const f=A[k];if(f)A[k]=el=>{if(!isDir())return;return f(el)}});["hbW","asSel","asPage","feCol","feTxt"].forEach(k=>{const f=CH[k];if(f)CH[k]=el=>{if(!isDir())return;return f(el)}})},0);
+setTimeout(()=>{["fePos","feMin","feIc","dzRole","dzRoleClr","feRoleSet","feSizeClr","fePart","fePartDel","devSet","hbScope","feScopeSet","asPick","asGo","asRole","asExit","feToggle","feNudge","feFs","feFw","feClr","feHide","feReset","feClose","hbEdit","hbMove","hbHide","hbH0","hbAdd","hbEditC","hbDelC"].forEach(k=>{const f=A[k];if(f)A[k]=el=>{if(!isDir())return;return f(el)}});["hbW","asSel","asPage","feCol","feTxt"].forEach(k=>{const f=CH[k];if(f)CH[k]=el=>{if(!isDir())return;return f(el)}})},0);
 function dirTools(g){if(!isDir())return"";return `<button class="btn sm" data-act="feToggle">✥ ${ui.freeEdit?"إيقاف التحريك":"تحريك العناصر"}</button><button class="btn sm" data-act="asPick">👁 عرض بصفة</button>`}
 const FE_SEL="h1,h2,h3,h4,p,.btn,button,a,label,.pill,.kind,.stat,.verse,.date,img,small,b,strong,.ring,.avatar,.chip,.t3-i,li";
 const pvKey=()=>{const m=me();return (m?m.role:"guest")+":"+(ui.view||"home")};
@@ -2166,7 +2179,7 @@ document.addEventListener("pointermove",e=>{if(!rz)return;const H=rz.h;let dx=e.
   if(e.shiftKey&&H.length===2){const s=Math.max(w/rz.w0,h/rz.h0);w=rz.w0*s;h=rz.h0*s;if(H.includes("w"))x=rz.x0-(w-rz.w0);if(H.includes("n"))y=rz.y0-(h-rz.h0)}
   w=Math.max(12,w);h=Math.max(10,h);rz.cur={w:Math.round(w),h:Math.round(h),x:Math.round(x),y:Math.round(y)};
   const el=rz.el;el.style.setProperty("width",rz.cur.w+"px","important");if(H!=="e"&&H!=="w")el.style.setProperty("height",rz.cur.h+"px","important");if(e.altKey&&H.length===2)el.style.setProperty("font-size",(rz.fs0*rz.cur.w/rz.w0).toFixed(1)+"px","important");el.style.setProperty("transform",`translate(${rz.cur.x}px,${rz.cur.y}px)`,"important");feBox()});
-document.addEventListener("pointerup",e=>{if(!rz)return;const R=rz;rz=null;if(!R.cur)return;const H=R.h;const p={w:R.cur.w,x:R.cur.x,y:R.cur.y};if(H!=="e"&&H!=="w")p.h=R.cur.h;if(e.altKey&&H.length===2)p.fs=Math.round(R.fs0*R.cur.w/R.w0);window.__feDragAt=Date.now();setFree(feKey(),p)},true);
+document.addEventListener("pointerup",e=>{if(!rz)return;const R=rz;rz=null;if(!R.cur)return;const H=R.h;const p={w:R.cur.w,x:R.cur.x,y:R.cur.y};if(H!=="e"&&H!=="w")p.h=R.cur.h;if(e.altKey&&H.length===2)p.fs=Math.round(R.fs0*R.cur.w/R.w0);window.__feDragAt=Date.now();setFreeOne(p)},true);
 })();
 
 /* ===== أيقونات تلقائية للعناوين والإحصاءات + حيوية ===== */
@@ -2204,10 +2217,10 @@ const _dicURL={};function dicURL(k,c){const kk=k+c;return _dicURL[kk]||(_dicURL[
 function dicFor(t){t=(t||"").trim();for(const [re,k] of DIC_RULES)if(re.test(t))return k;return ""}
 function icCol(){const d=design();if(okCol(d.icColor))return d.icColor;const cs=getComputedStyle(document.documentElement);return (cs.getPropertyValue(d.icStyle==="solid"?"--primary":"--teal")||"#1fa6c6").trim()}
 function icFg(){const d=design();return d.icStyle==="solid"?"#ffffff":icCol()}
-function icCSS(d){const s=dzNum(d.icSize,20,56,34),r=dzNum(d.icRad,0,50,30),c=okCol(d.icColor)?d.icColor:(d.icStyle==="solid"?"var(--primary)":"var(--teal)");let bg="transparent",bd="none";
+function icCSS(d){const s=dzNum(d.icSize,20,64,42),r=dzNum(d.icRad,0,50,30),c=okCol(d.icColor)?d.icColor:(d.icStyle==="solid"?"var(--primary)":"var(--teal)");let bg="transparent",bd="none";
   if(d.icStyle==="soft")bg=`color-mix(in srgb,${c} 14%,transparent)`;else if(d.icStyle==="solid")bg=`linear-gradient(135deg,${c},color-mix(in srgb,${c} 55%,var(--teal)))`;else if(d.icStyle==="line")bd=`1.5px solid color-mix(in srgb,${c} 55%,transparent)`;
   const sh=d.icStyle==="solid"?`0 6px 14px color-mix(in srgb,${c} 30%,transparent)`:"none";
-  return `:root{--ics:${s}px;--icr:${r}%;--icbg:${bg};--icbd:${bd};--icsh:${sh};--icp:${d.icStyle==="plain"?"0":"22%"}}`}
+  return `:root{--ics:${s}px;--icr:${r}%;--icbg:${bg};--icbd:${bd};--icsh:${sh};--icp:${d.icStyle==="plain"?"0":"19%"}}`}
 function decorIcons(){const d=design();const off=d.icons===false||d.icStyle==="off";const fg=off?"":icFg();
   const set=(el,k)=>{if(off||!k||k==="none"){if(el.dataset.ic){el.removeAttribute("data-ic");el.style.removeProperty("--ic")}return}const sig=k+fg;if(el.dataset.ic===sig)return;el.dataset.ic=sig;el.style.setProperty("--ic",k.startsWith("img:")?`url("${(d.icImgs||{})[k.slice(4)]||""}")`:dicURL(k,fg))};
   const F=d.free||{};const pv=pvKey(),dv=feDevKey?feDevKey(pv+"|").split("|")[0]:pv;
@@ -2228,6 +2241,7 @@ function fePanel(el){let p=document.getElementById("fe-panel");if(!el){if(p)p.re
   <div class="fe-g"><span>اللون</span><div class="row"><input type="color" value="${okCol(v.c)||"#24406f"}" data-change="feCol" data-p="c"><button data-act="feClr" data-p="c">تلقائي</button></div></div>
   <div class="fe-g"><span>الخلفية</span><div class="row"><input type="color" value="${okCol(v.bg)||"#ffffff"}" data-change="feCol" data-p="bg"><button data-act="feClr" data-p="bg">تلقائي</button></div></div>
   <details class="fe-g fe-icd" ${ui.feIcOpen?"open":""} ontoggle="ui.feIcOpen=this.open"><summary>الأيقونة <small class="muted">(اضغط لاختيار أيقونة)</small></summary><div class="fe-icg">${["auto","none",...Object.keys(DIC),...Object.keys(design().icImgs||{}).map(x=>"img:"+x)].map(k=>`<button type="button" class="${(v.ic||"auto")===k?"on":""}" data-act="feIc" data-v="${k}" title="${k==="auto"?"تلقائي":k==="none"?"بدون":k}">${k==="auto"?"<small>تلقائي</small>":k==="none"?"<small>بدون</small>":k.startsWith("img:")?`<img src="${esc((design().icImgs||{})[k.slice(4)]||"")}" style="width:100%;height:100%;object-fit:contain">`:`<i style='--m:${dicURL(k,"#000")}'></i>`}</button>`).join("")}</div><label class="btn sm" style="margin-top:6px;cursor:pointer">⬆ رفع أيقونة خاصة (SVG/PNG)<input type="file" accept="image/svg+xml,image/png,image/webp" hidden data-change="feIcUp"></label></details>
+  <div class="fe-g"><span>يطبق على الأدوار</span><div class="seg modeseg fe-rs"><button data-act="feRoleSet" data-v="one" class="${!ui.feRoles?"on":""}">هذا الدور</button><button data-act="feRoleSet" data-v="pick" class="${Array.isArray(ui.feRoles)?"on":""}">أدوار مختارة</button><button data-act="feRoleSet" data-v="all" class="${ui.feRoles==="all"?"on":""}">كل الأدوار</button></div>${Array.isArray(ui.feRoles)?`<div class="fe-rchips">${Object.keys(ROLE).filter(r=>r!==(feSet()[0]||"").split(":")[0]).map(r=>`<button class="${ui.feRoles.includes(r)?"on":""}" data-act="feRoleSet" data-v="${r}">${esc(ROLE[r])}</button>`).join("")}</div>`:""}<small class="muted">${ui.feRoles==="all"?"أي تعديل الآن ينسخ لنفس العنصر في واجهات كل الأدوار":Array.isArray(ui.feRoles)?"التعديل يطبق على هذا الدور + المحدد":"التعديل خاص بالدور الحالي"}</small></div>
   <div class="fe-g"><span>الحجم</span><div class="row"><small class="muted">${v.w?v.w+"px":"تلقائي"} × ${v.h?v.h+"px":"تلقائي"}</small><button data-act="feSizeClr">حجم تلقائي</button></div><small class="muted">اسحب الدوائر حول العنصر · Shift: نفس النسبة · Alt: يكبر الخط معه</small></div>
   ${txtEl?`<div class="fe-g"><span>النص</span><input class="fe-txt" value="${esc(v.txt||"")}" placeholder="اكتب نصاً جديداً أو اتركه" data-change="feTxt"></div>
   <div class="fe-g"><span>تلوين جزء من النص</span><input class="fe-src" readonly value="${esc((el.textContent||"").trim().slice(0,200))}" title="حدّد بالماوس الجزء اللي تبي تلوّنه"><div class="row" style="flex-wrap:wrap"><input type="color" class="fe-pc" value="#f5c547"><button data-act="fePart" data-k="c">لوّن المحدد</button><button data-act="fePart" data-k="b">عريض</button><button data-act="fePart" data-k="digits">لوّن الأرقام</button></div>${(v.parts||[]).length?`<div class="fe-parts">${v.parts.map((pt,i)=>`<span class="pill" style="${okCol(pt.c)?`color:${pt.c};`:""}${pt.fw?"font-weight:800;":""}">${pt.re==="digits"?"الأرقام":esc(pt.s)} <button data-act="fePartDel" data-i="${i}" title="حذف">✕</button></span>`).join("")}</div>`:""}<small class="muted">حدّد الكلمة داخل المربع ثم اختر اللون واضغط «لوّن المحدد»</small></div>`:""}
@@ -3032,7 +3046,7 @@ CH.dzImg=async el=>{const f=el.files&&el.files[0];el.value="";if(!f)return;if(!/
   try{let url;if(ASSETS){toast("جاري رفع الصورة…");const r=await ASSETS.upload(f);url=r.url}else if(MODE==="demo"){url=URL.createObjectURL(f)}else{url=await fitImg(f,1600);if(url.length>900000){toast("الصورة كبيرة جداً، صغّرها وجرّب","err");return}}
     setComp(k,"img",url);toast("رُفعت الصورة. اضغط «حفظ التعديلات» لتظهر للجميع")}catch(e){toast("تعذّر رفع الصورة: "+(e&&(e.code||e.message)||""),"err")}};
 CH.hbW=el=>{const g=el.dataset.g;const items=homeOrder(g);const x=items.find(y=>y.k===el.dataset.k);if(!x)return;x.w=Number(el.value);x.full=x.w===12;hbSave(g,items)};
-Object.assign(CH,{asRoleSel:el=>{if(!isDir())return;el.value?asRole(el.value):asApply(null)},asPage:el=>{ui.view=el.value;ui.feSel=null;ui.homeEdit=null;render();scrollTo(0,0)},asSel:el=>asApply(el.value||null),feCol:el=>setFreeMany(()=>({[el.dataset.p]:el.value})),feTxt:el=>setFree(feKey(),{txt:el.value.trim()}),});
+Object.assign(CH,{asRoleSel:el=>{if(!isDir())return;el.value?asRole(el.value):asApply(null)},asPage:el=>{ui.view=el.value;ui.feSel=null;ui.homeEdit=null;render();scrollTo(0,0)},asSel:el=>asApply(el.value||null),feCol:el=>setFreeMany(()=>({[el.dataset.p]:el.value})),feTxt:el=>setFreeOne({txt:el.value.trim()}),});
 CH.dz=el=>setDesign({[el.dataset.k]:el.dataset.num?Number(el.value):el.value});CH.dzb=el=>setDesign({[el.dataset.k]:el.checked});CH.dzCss=el=>setDesign({css:el.value});
 CH.mkAcct=el=>{$("#mk-box").hidden=!el.checked;if(el.checked){const u=$("#f-username");if(u)u.focus()}};
 
