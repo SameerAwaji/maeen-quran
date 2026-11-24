@@ -1847,7 +1847,7 @@ function applyTheme(){
   const sc=Math.min(1.3,Math.max(.85,Number(b.fontScale)||1));
   const faces=(b.customFonts||[]).filter(f=>f&&f.url&&/^(https:\/\/|\/|blob:)/.test(f.url)).map(f=>`@font-face{font-family:"${cssName(f.name)}";src:url("${String(f.url).replace(/["\\]/g,"")}");font-weight:100 900;font-display:swap}`).join("");
   const fv=(fb?`--f-body:${FONT_STACK(fb)};`:"")+(fh||fb?`--f-display:${FONT_STACK(fh||fb)};`:"");
-  const css=faces+(lv||dv?`:root{${lv}}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){${dv}}}:root[data-theme="light"]{${lv}}:root[data-theme="dark"]{${dv}}`:"")+(fv?`:root{${fv}}`:"")+(sc!==1?`html{font-size:${sc*100}%}body{font-size:${(16*sc).toFixed(1)}px}`:"")+designCSS(design())+freeCSS(design().free);try{document.documentElement.dataset.hero=design().hero||"poster";document.body.dataset.pv=pvKey();document.body.classList.toggle("free-edit",!!ui.freeEdit);document.body.classList.toggle("sim-mob",editing()&&edDev()==="m"&&innerWidth>=760);document.body.classList.toggle("sim-desk",editing()&&edDev()==="d"&&innerWidth<760);setTimeout(feApplyText,0)}catch(e){}
+  const css=faces+(lv||dv?`:root{${lv}}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){${dv}}}:root[data-theme="light"]{${lv}}:root[data-theme="dark"]{${dv}}`:"")+(fv?`:root{${fv}}`:"")+(sc!==1?`html{font-size:${sc*100}%}body{font-size:${(16*sc).toFixed(1)}px}`:"")+designCSS(design())+freeCSS(design().free);try{document.documentElement.dataset.hero=design().hero||"poster";document.body.dataset.pv=pvKey();document.body.classList.toggle("free-edit",!!ui.freeEdit);document.body.classList.toggle("sim-mob",editing()&&edDev()==="m"&&innerWidth>=760);document.body.classList.toggle("sim-desk",editing()&&edDev()==="d"&&innerWidth<760);setTimeout(()=>{feApplyText();try{decorIcons();vivid()}catch(e){}},0)}catch(e){}
   let el=document.getElementById("ctheme");if(!el){el=document.createElement("style");el.id="ctheme";document.head.appendChild(el)}if(el.textContent!==css)el.textContent=css;
   const gnames=new Set((b.customFonts||[]).filter(f=>f&&f.google).map(f=>cssName(f.name)));
   const need=[...new Set([fb,fh].filter(f=>f&&f!=="Tajawal"&&(FONT_HOST==="google"&&FONTS.some(x=>x[0]===f)||gnames.has(f))))];
@@ -2160,12 +2160,52 @@ document.addEventListener("pointermove",e=>{if(!rz)return;const H=rz.h;let dx=e.
   const el=rz.el;el.style.setProperty("width",rz.cur.w+"px","important");if(H!=="e"&&H!=="w")el.style.setProperty("height",rz.cur.h+"px","important");if(e.altKey&&H.length===2)el.style.setProperty("font-size",(rz.fs0*rz.cur.w/rz.w0).toFixed(1)+"px","important");el.style.setProperty("transform",`translate(${rz.cur.x}px,${rz.cur.y}px)`,"important");feBox()});
 document.addEventListener("pointerup",e=>{if(!rz)return;const R=rz;rz=null;if(!R.cur)return;const H=R.h;const p={w:R.cur.w,x:R.cur.x,y:R.cur.y};if(H!=="e"&&H!=="w")p.h=R.cur.h;if(e.altKey&&H.length===2)p.fs=Math.round(R.fs0*R.cur.w/R.w0);window.__feDragAt=Date.now();setFree(feKey(),p)},true);
 })();
+
+/* ===== أيقونات تلقائية للعناوين والإحصاءات + حيوية ===== */
+const DIC={
+users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 5.5 5"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+halaqa:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="7" r="1.6"/><circle cx="7.5" cy="14.5" r="1.6"/><circle cx="16.5" cy="14.5" r="1.6"/>',
+layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5" opacity=".5"/>',
+book:'<path d="M12 6c-2-1.5-5-2-8-1.5v14c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5v-14c-3-.5-6 0-8 1.5z"/><path d="M12 6v14"/>',
+cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h2M14 14h2M8 17h2"/>',
+clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+check:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+trophy:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+award:'<circle cx="12" cy="9" r="6"/><path d="M8.5 14L7 22l5-3 5 3-1.5-8"/>',
+chat:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+inbox:'<path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 3h6l1-3h5"/>',
+file:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 14h8M8 17h5"/>',
+video:'<rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-4v12l-6-4"/>',
+fire:'<path d="M12 22c4 0 7-3 7-7 0-5-4-7-5-11-2 2-3 4-3 6-1-1-2-2-2-4-2 2-4 5-4 9 0 4 3 7 7 7z"/>',
+moon:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+pen:'<path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/>',
+heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',
+mosque:'<path d="M4 21V12h16v9"/><path d="M8 12c0-3 4-4 4-7 0 3 4 4 4 7"/><path d="M2 21h20M10 21v-4a2 2 0 0 1 4 0v4"/>',
+pie:'<path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/>',
+link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'};
+const DIC_RULES=[[/لوحة الشرف|الأوائل|المتصدر|ترتيب/,"trophy"],[/اختبار|الاختبارات|تقييم|درجة|الدرجات/,"award"],[/حضور|غياب|الحاضر/,"check"],[/موعد|مواعيد|جلس|التسميع|تسميع/,"clock"],[/تقويم|الأسبوع|الشهر|التاريخ|اليوم|جدول/,"cal"],[/المرحلة|المراحل|المستوى|المستويات|المسار/,"layers"],[/حلق/,"halaqa"],[/طالب|طلاب|الطلبة|أبنائي|ابني|الأبناء/,"users"],[/معلم|مشرف|مستخدم|الأعضاء|الفريق|ولي/,"user"],[/رسال|محادث|ملاحظ|تعليق/,"chat"],[/تنبيه|إشعار/,"bell"],[/تقرير|التقارير|إحصاء|مؤشر|نسبة|الأداء|التقدم/,"chart"],[/هدف|الخطة|خطة|المهام|مهام/,"target"],[/تلاوة|التلاوة|صوت|تسجيل صوت/,"mic"],[/مصحف|المصحف|الحفظ|حفظ|مراجعة|المراجعة|سورة|السور|جزء|أجزاء|آية|الورد|ورد/,"book"],[/برنامج|البرامج|دورة|الدورات/,"mosque"],[/طلبات|طلب|الانتظار/,"inbox"],[/صلاحي|الأمان|كلمة المرور/,"lock"],[/إعداد|تخصيص|الأشكال|القوالب/,"gear"],[/ملف|مرفق|تصدير|استيراد/,"file"],[/فيديو|البث|لقاء|اجتماع/,"video"],[/سلسلة|متتالي|نشاط/,"fire"],[/نقاط|نجوم|تميز|إنجاز|إنجازات|المنجزة/,"star"],[/رابط|روابط/,"link"],[/توزيع|نسب/,"pie"],[/تحفيز|تشجيع|دعاء/,"heart"]];
+const _dicURL={};function dicURL(k){return _dicURL[k]||(_dicURL[k]=`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${DIC[k]}</svg>`)}")`)}
+function dicFor(t){t=(t||"").trim();for(const [re,k] of DIC_RULES)if(re.test(t))return k;return ""}
+function decorIcons(){if(design().icons===false){document.querySelectorAll("[data-ic]").forEach(e=>{e.removeAttribute("data-ic");e.style.removeProperty("--ic")});return}
+  const set=(el,k)=>{if(!k||el.dataset.ic===k)return;el.dataset.ic=k;el.style.setProperty("--ic",dicURL(k))};
+  document.querySelectorAll("main h2, main .card-h h3, main .card > h3:first-child").forEach(h=>set(h,dicFor(h.textContent)||"star"));
+  document.querySelectorAll("main .stat").forEach(s=>{const l=s.querySelector(":scope > span, :scope > small, :scope > .muted");if(l&&s.querySelector(":scope > b"))set(s,dicFor(l.textContent))})}
+let _lastVw="";function vivid(){if(editing()||matchMedia("(prefers-reduced-motion: reduce)").matches||design().motion===false)return;const k=pvKey()+"|"+(ui.asId||"");if(k===_lastVw)return;_lastVw=k;const m=document.querySelector("main");if(!m)return;m.classList.remove("anim-in");void m.offsetWidth;m.classList.add("anim-in");setTimeout(()=>m.classList.remove("anim-in"),1100);
+  m.querySelectorAll(".stat > b").forEach(b=>{const t=b.textContent.trim();if(!/^\d{1,5}$/.test(t)||b.dataset.cnt)return;const n=+t;if(n<2)return;b.dataset.cnt=1;const t0=performance.now(),D=700;const st=now=>{const p=Math.min(1,(now-t0)/D);b.textContent=Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(st);else delete b.dataset.cnt};requestAnimationFrame(st)})}
 function fePanel(el){let p=document.getElementById("fe-panel");if(!el){if(p)p.remove();return}const v=feVal();const sc=feScope();
   if(!p){p=document.createElement("div");p.id="fe-panel";document.body.appendChild(p)}
   const cs=getComputedStyle(el);const fs=Math.round(parseFloat(cs.fontSize)||16);const txtEl=[...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim())||!el.children.length;
   p.innerHTML=`<div class="fe-h" title="اسحب من هنا لتحريك اللوحة"><span class="fe-grip">⠿</span><b>${feSet().length>1?`تحريك ${feSet().length} عناصر`:"تحريك العنصر"}</b><span class="fe-hb"><button type="button" data-act="fePos" data-v="r" title="ثبّتها يمين الشاشة">⇥</button><button type="button" data-act="fePos" data-v="l" title="ثبّتها يسار الشاشة">⇤</button><button type="button" data-act="fePos" data-v="auto" title="تتبع العنصر تلقائياً">⌖</button><button type="button" data-act="feMin" title="${ui.feMin?"توسيع":"تصغير"}">${ui.feMin?"▢":"–"}</button><button type="button" data-act="feClose" title="إغلاق">✕</button></span></div><div class="fe-body" ${ui.feMin?"hidden":""}>
   <div class="fe-g"><span>يطبّق على</span>${devBtns()}</div>
-  <div class="fe-g"><span>المكان</span><div class="fe-pad"><button data-act="feNudge" data-dx="0" data-dy="-5">↑</button><button data-act="feNudge" data-dx="5" data-dy="0">→</button><button data-act="feNudge" data-dx="-5" data-dy="0">←</button><button data-act="feNudge" data-dx="0" data-dy="5">↓</button></div><small class="muted">اسحب العنصر نفسه · Shift: خط مستقيم · Shift+نقر: تحديد إضافي</small></div>
+  <div class="fe-g"><span>المكان</span><div class="fe-pad"><button data-act="feNudge" data-dx="0" data-dy="-5">↑</button><button data-act="feNudge" data-dx="5" data-dy="0">→</button><button data-act="feNudge" data-dx="-5" data-dy="0">←</button><button data-act="feNudge" data-dx="0" data-dy="5">↓</button></div><small class="muted">اسحب العنصر نفسه · Shift: خط مستقيم · Shift+نقر: تحديد إضافي · اسحب بالزر الأيسر في أي مكان لتحديد عدة عناصر بالمستطيل</small></div>
   <div class="fe-g"><span>حجم الخط</span><div class="row"><button data-act="feFs" data-n="-1">−</button><b class="num">${v.fs||fs}px</b><button data-act="feFs" data-n="1">+</button></div></div>
   <div class="fe-g"><span>السماكة</span><div class="row"><button data-act="feFw" data-v="400" class="${v.fw==400?"on":""}">عادي</button><button data-act="feFw" data-v="700" class="${v.fw==700?"on":""}">عريض</button><button data-act="feFw" data-v="" class="${!v.fw?"on":""}">تلقائي</button></div></div>
   <div class="fe-g"><span>اللون</span><div class="row"><input type="color" value="${okCol(v.c)||"#24406f"}" data-change="feCol" data-p="c"><button data-act="feClr" data-p="c">تلقائي</button></div></div>
@@ -2194,10 +2234,24 @@ document.addEventListener("pointerup",()=>{if(!pd)return;const r=pd.p.getBoundin
 const navLike=t=>t.closest&&t.closest('[data-act="go"],.kidtabs button,.subtabs button,[data-act="kid"],[data-act="ctab"]');
 const cand=t=>{if(!ui.freeEdit||!t||!t.closest)return null;if(t.closest("#fe-panel,.pv-bar,.hb-bar,.hb-tools,.draftbar,#modal,.demo-bar,.hb-entry"))return null;if(!t.closest("main,header.top,.tabbar"))return null;return t.closest(FE_SEL)};
 document.addEventListener("mouseover",e=>{const c=cand(e.target);if(hov&&hov!==c)hov.classList.remove("fe-hov");hov=c;if(c)c.classList.add("fe-hov")});
-document.addEventListener("click",e=>{if(!ui.freeEdit)return;const t=e.target;const inZone=t.closest&&t.closest("main,header.top,.tabbar")&&!t.closest("#fe-panel,.pv-bar,.hb-bar,.hb-tools,.draftbar,#modal,.demo-bar,.hb-entry");const c=cand(t);if(!c){if(inZone){e.preventDefault();e.stopPropagation()}return}e.preventDefault();e.stopPropagation();const path=fePath(c);if(!path)return;const nk=pvKey()+"|"+path;if(e.shiftKey&&ui.feSel){if(Date.now()-(window.__feDragAt||0)<300)return;const S=feSet().slice();const i=S.indexOf(nk);if(i>=0)S.splice(i,1);else S.push(nk);ui.feMulti=S;ui.feSel=S[S.length-1]||null}else{ui.feMulti=null;ui.feSel=nk;ui.feScope=null}feApplyText()},true);
+document.addEventListener("click",e=>{if(!ui.freeEdit)return;const t=e.target;if(Date.now()-(window.__feMqAt||0)<300&&t.closest&&!t.closest("#fe-panel,.pv-bar,.draftbar,#modal")){e.preventDefault();e.stopPropagation();return}const inZone=t.closest&&t.closest("main,header.top,.tabbar")&&!t.closest("#fe-panel,.pv-bar,.hb-bar,.hb-tools,.draftbar,#modal,.demo-bar,.hb-entry");const c=cand(t);if(!c){if(inZone){e.preventDefault();e.stopPropagation()}return}e.preventDefault();e.stopPropagation();const path=fePath(c);if(!path)return;const nk=pvKey()+"|"+path;if(e.shiftKey&&ui.feSel){if(Date.now()-(window.__feDragAt||0)<300)return;const S=feSet().slice();const i=S.indexOf(nk);if(i>=0)S.splice(i,1);else S.push(nk);ui.feMulti=S;ui.feSel=S[S.length-1]||null}else{ui.feMulti=null;ui.feSel=nk;ui.feScope=null}feApplyText()},true);
 document.addEventListener("pointerdown",e=>{if(!ui.freeEdit)return;const c=cand(e.target);if(!c||!c.classList.contains("fe-on"))return;e.preventDefault();drag={x:e.clientX,y:e.clientY,moved:false,items:feSet().map(b=>{const v=feValOf(b);return {b,el:feElOf(b),x0:+v.x||0,y0:+v.y||0}}).filter(o=>o.el)}},true);
 document.addEventListener("pointermove",e=>{if(!drag)return;let dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(e.shiftKey){if(Math.abs(dx)>=Math.abs(dy))dy=0;else dx=0}drag.dx=dx;drag.dy=dy;if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;drag.items.forEach(o=>o.el.style.setProperty("transform",`translate(${o.x0+dx}px,${o.y0+dy}px)`,"important"))});
 document.addEventListener("pointerup",e=>{if(!drag)return;const d=drag;drag=null;if(!d.moved)return;let dx=e.clientX-d.x,dy=e.clientY-d.y;if(e.shiftKey){if(Math.abs(dx)>=Math.abs(dy))dy=0;else dx=0}window.__feDragAt=Date.now();const M={};d.items.forEach(o=>M[o.b]=o);setFreeMany(b=>M[b]?{x:Math.round(M[b].x0+dx),y:Math.round(M[b].y0+dy)}:{})});
+})();
+
+/* تحديد العناصر بالسحب (مستطيل تحديد) */
+(function(){let mq=null;const ZX="#fe-panel,.pv-bar,.hb-bar,.hb-tools,.draftbar,#modal,.demo-bar,.hb-entry,#fe-box";
+document.addEventListener("pointerdown",e=>{if(!ui.freeEdit||e.button!==0)return;const t=e.target;if(!t.closest||t.closest(ZX))return;if(!t.closest("main,header.top,.tabbar"))return;const c=t.closest(FE_SEL);if(c&&c.classList.contains("fe-on"))return;mq={x:e.clientX,y:e.clientY,add:e.shiftKey,on:false};e.preventDefault()},true);
+document.addEventListener("pointermove",e=>{if(!mq)return;const dx=e.clientX-mq.x,dy=e.clientY-mq.y;if(!mq.on&&Math.abs(dx)+Math.abs(dy)<6)return;if(!mq.on){mq.on=true;mq.box=document.createElement("div");mq.box.id="fe-mq";document.body.appendChild(mq.box)}
+  const l=Math.min(mq.x,e.clientX),tp=Math.min(mq.y,e.clientY),w=Math.abs(dx),h=Math.abs(dy);Object.assign(mq.box.style,{left:l+"px",top:tp+"px",width:w+"px",height:h+"px"});mq.r={l,t:tp,r:l+w,b:tp+h};
+  document.querySelectorAll(".fe-mq-hit").forEach(x=>x.classList.remove("fe-mq-hit"));mqHits(mq.r).forEach(x=>x.classList.add("fe-mq-hit"))});
+function mqHits(R){const all=[...document.querySelectorAll("main, header.top, .tabbar")].flatMap(z=>[...z.querySelectorAll(FE_SEL)]).filter(el=>{if(el.closest(ZX))return false;const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&r.left>=R.l-1&&r.right<=R.r+1&&r.top>=R.t-1&&r.bottom<=R.b+1});
+  return all.filter(el=>!all.some(o=>o!==el&&o.contains(el)))}
+document.addEventListener("pointerup",e=>{if(!mq)return;const M=mq;mq=null;if(!M.on)return;M.box.remove();document.querySelectorAll(".fe-mq-hit").forEach(x=>x.classList.remove("fe-mq-hit"));window.__feMqAt=Date.now();
+  const keys=mqHits(M.r).map(el=>{const p=fePath(el);return p?pvKey()+"|"+p:null}).filter(Boolean);
+  let S=M.add?feSet().slice():[];keys.forEach(k=>{if(!S.includes(k))S.push(k)});if(!S.length){ui.feSel=null;ui.feMulti=null}else{ui.feMulti=S.length>1?S:null;ui.feSel=S[S.length-1];ui.feScope=null}
+  document.querySelectorAll(".fe-on").forEach(x=>x.classList.remove("fe-on"));feApplyText();if(S.length>1)toast(`تم تحديد ${S.length} عناصر`,"ok")});
 })();
 
 function customView(m){
