@@ -1,5 +1,5 @@
 /* عامل الخدمة: يعمل الموقع بدون إنترنت، ويستقبل الإشعارات والمنصة مقفلة */
-const V = "maeen-v3";
+const V = "maeen-v4";
 const SHELL = ["/", "/index.html", "/app.js", "/config.js", "/vendor/supabase.js", "/manifest.webmanifest", "/icon-192.png"];
 const NET_FIRST = /\/(index\.html|app\.js|config\.js)?$/;
 
@@ -17,6 +17,7 @@ self.addEventListener("fetch", e => {
   const same = u.origin === self.location.origin;
   const cdn = u.hostname === "cdn.jsdelivr.net" || u.hostname === "fonts.gstatic.com" || u.hostname === "fonts.googleapis.com";
   if (!same && !cdn) return; // بيانات Supabase والصوتيات لا تُخزَّن هنا
+  if (same && u.pathname.startsWith("/.netlify/")) return; // الوسيط (المواقيت والأحاديث والأذكار) من الشبكة دائماً
   if (same && (r.mode === "navigate" || NET_FIRST.test(u.pathname))) {
     // الشبكة أولاً للصفحة والكود حتى تصل التحديثات فوراً، والنسخة المحفوظة عند انقطاع الاتصال
     e.respondWith(fetch(r).then(res => {
