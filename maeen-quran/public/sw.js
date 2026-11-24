@@ -1,6 +1,6 @@
 /* عامل الخدمة: يعمل الموقع بدون إنترنت، ويستقبل الإشعارات والمنصة مقفلة */
-const V = "maeen-v4";
-const SHELL = ["/", "/index.html", "/app.js", "/config.js", "/vendor/supabase.js", "/manifest.webmanifest", "/icon-192.png"];
+const V = "maeen-v5";
+const SHELL = ["./", "index.html", "app.js", "config.js", "vendor/supabase.js", "manifest.webmanifest", "icon-192.png"];
 const NET_FIRST = /\/(index\.html|app\.js|config\.js)?$/;
 
 self.addEventListener("install", e => {
@@ -21,9 +21,9 @@ self.addEventListener("fetch", e => {
   if (same && (r.mode === "navigate" || NET_FIRST.test(u.pathname))) {
     // الشبكة أولاً للصفحة والكود حتى تصل التحديثات فوراً، والنسخة المحفوظة عند انقطاع الاتصال
     e.respondWith(fetch(r).then(res => {
-      if (res.ok) { const cp = res.clone(); caches.open(V).then(c => c.put(r.mode === "navigate" ? "/" : r, cp)); }
+      if (res.ok) { const cp = res.clone(); caches.open(V).then(c => c.put(r.mode === "navigate" ? "./" : r, cp)); }
       return res;
-    }).catch(() => caches.match(r.mode === "navigate" ? "/" : r).then(x => x || caches.match("/"))));
+    }).catch(() => caches.match(r.mode === "navigate" ? "./" : r).then(x => x || caches.match("./"))));
     return;
   }
   // الملفات الثابتة (المصحف والخطوط والمكتبات): من المحفوظ أولاً
@@ -43,7 +43,7 @@ self.addEventListener("push", e => {
 });
 self.addEventListener("notificationclick", e => {
   e.notification.close();
-  const url = (e.notification.data && e.notification.data.url) || "/";
+  const url = (e.notification.data && e.notification.data.url) || "./";
   e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
     for (const c of list) { if ("focus" in c) { c.navigate(url).catch(() => {}); return c.focus(); } }
     return self.clients.openWindow(url);

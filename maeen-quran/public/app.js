@@ -700,7 +700,7 @@ window.addEventListener("offline",()=>{OFF.on=true;offBar()});
 setInterval(()=>{if(OFF.q.length&&navigator.onLine&&MODE==="live")offFlush()},30000);
 /* تحديث تلقائي: إذا نُشرت نسخة جديدة من الموقع تُحمَّل عند الرجوع للصفحة */
 let APPV=null;
-async function appVer(){try{const r=await fetch("/app.js",{method:"HEAD",cache:"no-store"});return r.ok?(r.headers.get("etag")||r.headers.get("last-modified")):null}catch(e){return null}}
+async function appVer(){try{const r=await fetch("app.js",{method:"HEAD",cache:"no-store"});return r.ok?(r.headers.get("etag")||r.headers.get("last-modified")):null}catch(e){return null}}
 setTimeout(async()=>{APPV=await appVer()},4000);
 async function checkUpd(){if(!APPV||!navigator.onLine)return;const v=await appVer();if(v&&v!==APPV){const busy=($("#modal")&&$("#modal").innerHTML.trim())||hasDrafts()||OFF.q.length;if(busy){toast("يوجد تحديث جديد للمنصة، سيُطبَّق عند إعادة فتح الصفحة");APPV=v;return}location.reload()}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkUpd()});
@@ -713,7 +713,7 @@ let SNAP_T=null;
 function snapSave(){if(!UID||MODE!=="live"||OFF.on)return;const o={at:Date.now(),t:{}};TABLES.forEach(t=>{if(RAW[t])o.t[t]=[...RAW[t].values()]});idbSet("snap:"+UID,o)}
 function snapSaveSoon(){clearTimeout(SNAP_T);SNAP_T=setTimeout(snapSave,4000)}
 async function snapLoad(){if(!UID)return false;const o=await idbGet("snap:"+UID);if(!o||!o.t)return false;TABLES.forEach(t=>{RAW[t]=new Map((o.t[t]||[]).map(r=>[r.id,r]))});return true}
-function swRegister(){if(!("serviceWorker" in navigator)||!(location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1"))return;navigator.serviceWorker.register("/sw.js").catch(()=>{})}
+function swRegister(){if(!("serviceWorker" in navigator)||!(location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1"))return;navigator.serviceWorker.register("sw.js").catch(()=>{})}
 /* ============ إشعارات تصل والمنصة مقفلة (Web Push) ============ */
 const b64u=s=>{const p="=".repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...b].map(c=>c.charCodeAt(0)))};
 const pushReady=()=>!!("serviceWorker" in navigator&&"PushManager" in window&&SB&&MODE==="live"&&CFG.supabaseUrl);
@@ -1751,7 +1751,7 @@ function permsDoc(){const roles={};["admin","supervisor","teacher","assistant","
 /* ============ التصدير: Excel و PDF ============ */
 const LIBS={};
 function lib(src,glob){return LIBS[src]||(LIBS[src]=new Promise((res,rej)=>{if(window[glob])return res(window[glob]);const sc=document.createElement("script");sc.src=src;sc.onload=()=>window[glob]?res(window[glob]):rej(new Error("lib"));sc.onerror=()=>{delete LIBS[src];rej(new Error("load"))};document.head.appendChild(sc)}))}
-const XLSX_SRC="/vendor/xlsx.full.min.js",JSPDF_SRC="/vendor/jspdf.umd.min.js";
+const XLSX_SRC="vendor/xlsx.full.min.js",JSPDF_SRC="vendor/jspdf.umd.min.js";
 async function saveBlob(name,blob){
   if(DL){try{await DL.save({filename:name,data:blob});return}catch(e){if(e&&e.code==="declined")return;toast("تعذّر التنزيل ("+(e&&e.code||"")+")","err");return}}
   if(MODE==="demo"){const url=URL.createObjectURL(blob);openModal("الملف جاهز",`<p>في العرض التجريبي خارج المنصة لا يتوفر التنزيل المباشر.</p><p class="hint">${esc(name)} · ${Math.round(blob.size/1024)} ك.ب</p>`,"noop",{},"إغلاق");return url}
@@ -2311,7 +2311,7 @@ function parentMsgModal(sid){const s=get("members",sid)||{};const ph=String(s.gu
 setTimeout(()=>{try{FORMS.pmsg=()=>{closeModal()}}catch(e){}},0);
 
 /* ===================== زادي: مواقيت الصلاة · الأذكار · الأحاديث · أعمالي اليومية ===================== */
-const ZAD_API="/.netlify/functions/zad";
+const ZAD_API=".netlify/functions/zad";
 const ZCITY=[["مكة المكرمة",21.4225,39.8262],["المدينة المنورة",24.4672,39.6111],["الرياض",24.7136,46.6753],["جدة",21.5433,39.1728],["الدمام",26.4207,50.0888],["الخبر",26.2172,50.1971],["الظهران",26.2361,50.0393],["الأحساء",25.3833,49.5833],["الجبيل",27.0046,49.646],["القطيف",26.5652,50.0089],["الطائف",21.2703,40.4158],["أبها",18.2164,42.5053],["خميس مشيط",18.3,42.7333],["تبوك",28.3838,36.555],["بريدة",26.3592,43.9818],["عنيزة",26.0844,43.9935],["حائل",27.5219,41.6907],["جازان",16.8892,42.5511],["نجران",17.4924,44.1277],["ينبع",24.0895,38.0618],["الباحة",20.0129,41.4677],["عرعر",30.9753,41.0381],["سكاكا",29.9697,40.2064],["حفر الباطن",28.4328,45.9708],["القريات",31.3318,37.3428],["الخرج",24.1556,47.3122],["المجمعة",25.9039,45.3456],["الدوادمي",24.5077,44.3924],["القنفذة",19.1264,41.0789],["بيشة",20.0005,42.6052]];
 const ZP=[["fajr","الفجر"],["sunrise","الشروق"],["dhuhr","الظهر"],["asr","العصر"],["maghrib","المغرب"],["isha","العشاء"]];
 const ZPI={fajr:'<path d="M3 18h18M6 18a6 6 0 0 1 12 0"/><path d="M12 6v3M5 10l1.5 1.5M19 10l-1.5 1.5"/>',sunrise:'<path d="M3 18h18M7 18a5 5 0 0 1 10 0"/><path d="M12 4v4M9 6l3-2 3 2"/>',dhuhr:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',asr:'<circle cx="10" cy="10" r="4"/><path d="M4 20h16M10 2v2M2 10h2M4.3 4.3l1.4 1.4M15.7 4.3l-1.4 1.4"/>',maghrib:'<path d="M3 16h18M7 16a5 5 0 0 1 10 0M5 20h14"/><path d="M12 8v-4M9 6l3 2 3-2"/>',isha:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'};
@@ -2366,8 +2366,8 @@ function zPrayMini(){zLoadPT();const n=zNext();const P=ZST.pt&&ZST.pt.times;if(!
   </section></div>`}
 /* ===== الأذان والتنبيه ===== */
 let zAudio=null;function zChime(){try{const C=new (window.AudioContext||window.webkitAudioContext)();[[523.25,0],[659.25,.35],[783.99,.7],[1046.5,1.05]].forEach(([f,t])=>{const o=C.createOscillator(),g=C.createGain();o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0,C.currentTime+t);g.gain.linearRampToValueAtTime(.25,C.currentTime+t+.05);g.gain.exponentialRampToValueAtTime(.001,C.currentTime+t+1.4);o.connect(g);g.connect(C.destination);o.start(C.currentTime+t);o.stop(C.currentTime+t+1.5)})}catch(e){}}
-function zAdhan(k){const nm=zName(k);try{if("Notification" in window&&Notification.permission==="granted")new Notification("حان الآن موعد أذان "+nm,{body:"حسب توقيت "+zCity()[0],icon:"/icon-192.png",tag:"adhan-"+k})}catch(e){}
-  try{toast("حان الآن موعد أذان "+nm+" 🕌")}catch(e){}if(zls.get("sound",true)){try{if(zAudio){zAudio.pause()}zAudio=new Audio("/adhan.mp3");zAudio.play().catch(()=>zChime())}catch(e){zChime()}}}
+function zAdhan(k){const nm=zName(k);try{if("Notification" in window&&Notification.permission==="granted")new Notification("حان الآن موعد أذان "+nm,{body:"حسب توقيت "+zCity()[0],icon:"icon-192.png",tag:"adhan-"+k})}catch(e){}
+  try{toast("حان الآن موعد أذان "+nm+" 🕌")}catch(e){}if(zls.get("sound",true)){try{if(zAudio){zAudio.pause()}zAudio=new Audio("adhan.mp3");zAudio.play().catch(()=>zChime())}catch(e){zChime()}}}
 setInterval(()=>{try{document.querySelectorAll(".zad-cd").forEach(el=>{const n=zNext();if(n)el.textContent=zCD(n.diff)});document.querySelectorAll(".zad-pg").forEach(el=>{el.style.width=zProg()+"%"});document.querySelectorAll(".zad-el").forEach(el=>{el.textContent=zCD(zEl())});const iw=zIqWin();document.querySelectorAll(".zad-iqcd").forEach(el=>{if(iw)el.textContent=zCD(iw.secs);else{const p=el.closest(".zm-iqw");if(p)p.remove()}});
   if(!zls.get("adhan",false)||!ZST.pt)return;const now=new Date(),hm=String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");const P=ZST.pt.times;["fajr","dhuhr","asr","maghrib","isha"].forEach(k=>{if(P[k]===hm){const f=zYmd(now)+k;if(zls.get("fired","")!==f){zls.set("fired",f);zAdhan(k)}}});
   if(ZST.ptKey&&ZST.ptKey.split("|")[0]!==zYmd(now))zLoadPT(true)}catch(e){}},1000);
@@ -3316,9 +3316,9 @@ const AUTH_ERR=e=>{const m=String(e&&e.message||"");if(/Invalid login/i.test(m))
 Object.assign(FORMS,{
   login:async fd=>{let id=fd.get("email").trim().toLowerCase();if(!id.includes("@"))id=id+"@"+USERDOM();const{error}=await SB.auth.signInWithPassword({email:id,password:fd.get("password")});if(error){toast(AUTH_ERR(error),"err");return}},
   signup:async fd=>{const email=fd.get("email").trim(),pw=fd.get("password");if(pw!==fd.get("password2")){toast("كلمتا المرور غير متطابقتين","err");return}
-    const{data,error}=await SB.auth.signUp({email,password:pw,options:{data:{name:fd.get("name").trim(),phone:fd.get("phone").trim()},emailRedirectTo:location.origin}});
+    const{data,error}=await SB.auth.signUp({email,password:pw,options:{data:{name:fd.get("name").trim(),phone:fd.get("phone").trim()},emailRedirectTo:location.origin+location.pathname}});
     if(error){toast(AUTH_ERR(error),"err");return}if(!data.session){ui.auth="sent";ui.authEmail=email;render()}},
-  forgot:async fd=>{const email=fd.get("email").trim();const{error}=await SB.auth.resetPasswordForEmail(email,{redirectTo:location.origin});if(error){toast(AUTH_ERR(error),"err");return}ui.auth="sentReset";ui.authEmail=email;render()},
+  forgot:async fd=>{const email=fd.get("email").trim();const{error}=await SB.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error){toast(AUTH_ERR(error),"err");return}ui.auth="sentReset";ui.authEmail=email;render()},
   newpass:async fd=>{const pw=fd.get("password");if(pw!==fd.get("password2")){toast("كلمتا المرور غير متطابقتين","err");return}const{error}=await SB.auth.updateUser({password:pw});if(error){toast(AUTH_ERR(error),"err");return}toast("تم تغيير كلمة المرور");ui.auth="login";const{data}=await SB.auth.getSession();if(data.session)startSession(data.session);else{MODE="auth";render()}},
 });
 Object.assign(A,{
