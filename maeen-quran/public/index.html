@@ -1172,15 +1172,20 @@ body.sim-mob .g2{grid-template-columns:1fr}
 .who-btn .who-n{grid-row:1;grid-column:2;justify-self:start;font-weight:700;line-height:1.2}
 .who-btn .role-pill{grid-row:2;grid-column:2;justify-self:start;font-size:.68rem;padding:0 8px;line-height:1.5}
 
-/* ===== أيقونات العناوين والإحصاءات ===== */
+/* ===== أيقونات العناوين والإحصاءات (قابلة للتخصيص) ===== */
 main h2[data-ic],main .card-h h3[data-ic],main .card>h3[data-ic]{display:flex;align-items:center}
-main h2[data-ic]::before,main .card-h h3[data-ic]::before,main .card>h3[data-ic]::before{content:"";flex:none;width:32px;height:32px;border-radius:10px;transform:none;opacity:1;margin-inline-end:10px;background:var(--primary-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--primary) 12%,transparent)}
-main h2[data-ic]::after,main .card-h h3[data-ic]::after,main .card>h3[data-ic]::after{content:"";flex:none;order:-1;width:18px;height:18px;margin-inline-start:7px;margin-inline-end:-25px;position:relative;z-index:1;background:var(--primary);-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat;transition:transform .3s}
-main .card:hover h2[data-ic]::after,main .card:hover .card-h h3[data-ic]::after{transform:rotate(-8deg) scale(1.12)}
-main .stat[data-ic]{position:relative;padding-inline-end:58px}
-main .stat[data-ic]::after{content:"";position:absolute;inset-inline-end:14px;top:50%;width:36px;height:36px;margin-top:-18px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#f0a91e);
-  -webkit-mask:var(--ic) center/20px no-repeat,linear-gradient(#000,#000);-webkit-mask-composite:xor;mask:var(--ic) center/20px no-repeat exclude,linear-gradient(#000,#000);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
-main .stat[data-ic]:hover::after{transform:translateY(-3px) rotate(-6deg)}
+main h2[data-ic]::before,main .card-h h3[data-ic]::before,main .card>h3[data-ic]::before{content:"";flex:none;width:var(--ics,34px);height:var(--ics,34px);border-radius:var(--icr,30%);transform:none;opacity:1;margin-inline-end:10px;box-sizing:border-box;
+  background:var(--ic) center/calc(100% - var(--icp,22%) * 2) no-repeat,var(--icbg,transparent);border:var(--icbd,none);box-shadow:var(--icsh,none);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+main .card:hover h2[data-ic]::before,main .card:hover .card-h h3[data-ic]::before{transform:rotate(-8deg) scale(1.08)}
+main .stat[data-ic]{position:relative;padding-inline-end:calc(var(--ics,34px) + 24px)}
+main .stat[data-ic]::after{content:"";position:absolute;inset-inline-end:14px;top:50%;width:var(--ics,34px);height:var(--ics,34px);transform:translateY(-50%);border-radius:var(--icr,30%);box-sizing:border-box;
+  background:var(--ic) center/calc(100% - var(--icp,22%) * 2) no-repeat,var(--icbg,transparent);border:var(--icbd,none);box-shadow:var(--icsh,none);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+main .stat[data-ic]:hover::after{transform:translateY(calc(-50% - 3px)) rotate(-6deg)}
+#fe-panel .fe-icg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:6px}#fe-panel .fe-icd summary{cursor:pointer;font-weight:700;font-size:.8rem}#fe-panel .fe-icg button small{font-size:.55rem}
+#fe-panel .fe-icg button{aspect-ratio:1;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:5px;cursor:pointer}
+#fe-panel .fe-icg button.on{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-soft)}
+#fe-panel .fe-icg button i{display:block;width:100%;height:100%;background:var(--ink);-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
+.dz-icprev{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}.dz-icprev span{width:var(--ics);height:var(--ics);border-radius:var(--icr);background:var(--ic) center/calc(100% - var(--icp) * 2) no-repeat,var(--icbg);border:var(--icbd);box-shadow:var(--icsh)}
 /* ===== حيوية ===== */
 @media (prefers-reduced-motion:no-preference){
 body:not(.free-edit) main .card,body:not(.free-edit) main .stat,body:not(.free-edit) main .li.clickable{transition:transform .25s ease,box-shadow .25s ease}
