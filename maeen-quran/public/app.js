@@ -2188,7 +2188,7 @@ function asRole(r){const R=realMe();const list=S.members.filter(x=>x.status==="a
   const score=x=>r==="teacher"?S.members.filter(s=>s.teacherId===x.id).length:r==="parent"?(x.childIds||[]).length:r==="student"?S.tasks.filter(t=>t.studentId===x.id).length:0;list.sort((a,b)=>score(b)-score(a));asApply(list[0].id)}
 setTimeout(()=>{["fePos","feMin","feShadow","feShapeReset","feIcNudge","feIcReset","feIcBgNone","uhUndo","uhRedo","feFmtCopy","feFmtPaste","cmpToggle","snapSave","snapLoad","snapDel","feIc","dzRole","dzRoleClr","feRoleSet","feSizeClr","fePart","fePartDel","devSet","hbScope","feScopeSet","asPick","asGo","asRole","asExit","feToggle","feNudge","feFs","feFw","feClr","feHide","feReset","feClose","hbEdit","hbMove","hbHide","hbH0","hbAdd","hbEditC","hbDelC"].forEach(k=>{const f=A[k];if(f)A[k]=el=>{if(!isDir())return;return f(el)}});["hbW","asSel","asPage","feCol","feTxt"].forEach(k=>{const f=CH[k];if(f)CH[k]=el=>{if(!isDir())return;return f(el)}})},0);
 function dirTools(g){if(!isDir())return"";return `<button class="btn sm" data-act="feToggle">✥ ${ui.freeEdit?"إيقاف التحريك":"تحريك العناصر"}</button><button class="btn sm" data-act="asPick">👁 عرض بصفة</button>`}
-const FE_SEL="h1,h2,h3,h4,p,.btn,button,a,label,.pill,.kind,.stat,.verse,.date,img,small,b,strong,.ring,.avatar,.chip,.t3-i,li";
+const FE_SEL="h1,h2,h3,h4,p,.btn,button,a,label,.pill,.kind,.stat,.verse,.date,img,small,b,strong,.ring,.avatar,.chip,.t3-i,li,.zm-ic,.zt-ic,.zh-ic,.zq,.zt,.zad-mini,.zad-hero,.zm-cd,.zm-two>span,.zm-list>span,.zm-n,.zm-t,.zt-t,.zt-n,.ti,.ni,.zd-pr>button,.kh-ring,.zd-ring,.dk,.hd,.zch,.zad-hod,.zh-next,.zh-cd,.today-card,.greet,.card,.li,.row-card,.badge,.msg-card";
 const pvKey=()=>{const m=me();return (m?m.role:"guest")+":"+(ui.view||"home")};
 function fePath(el){const root=el.closest("main,header.top,.tabbar");if(!root)return"";const rs=root.tagName==="MAIN"?"main":root.classList.contains("tabbar")?".tabbar":"header.top";const parts=[];let n=el;
   while(n&&n!==root){const p=n.parentElement;if(!p)return"";const i=[...p.children].indexOf(n)+1;parts.unshift(`${n.tagName.toLowerCase()}:nth-child(${i})`);n=p}
@@ -3076,9 +3076,10 @@ function fitMushaf(){const el=document.querySelector(".mushaf.m15");if(!el)retur
   const cs=getComputedStyle(el);const cw=el.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);const open=el.classList.contains("m-open");
   const nat=()=>{let mx=0;const f=parseFloat(el.style.fontSize);el.querySelectorAll(".ml").forEach(l=>{let s=0;for(const c of l.children)s+=c.getBoundingClientRect().width;s+=(l.children.length-1)*f*.12;if(s>mx)mx=s});return mx};
   if(open){const fs=Math.min(cw*.06,33);el.style.fontSize=fs.toFixed(2)+"px";const mx=nat();el.style.setProperty("--mlw",Math.min(cw,Math.ceil(mx*1.04))+"px");return}
-  const mx=nat();if(mx>0)el.style.fontSize=Math.min(base*cw/mx,42).toFixed(2)+"px"}
+  const mx=nat();if(mx>0)el.style.fontSize=Math.min(base*cw/mx,42).toFixed(2)+"px";
+  for(let i=0;i<5;i++){let r=1;el.querySelectorAll(".ml").forEach(l=>{const q=l.scrollWidth/Math.max(1,l.clientWidth);if(q>r)r=q});if(r<=1.002)break;el.style.fontSize=(parseFloat(el.style.fontSize)/(r*1.01)).toFixed(2)+"px"}}
 window.addEventListener("resize",()=>{clearTimeout(window.__fm);window.__fm=setTimeout(()=>{fitMushaf();fitQcf()},120)});
-try{document.fonts&&document.fonts.ready.then(()=>fitMushaf());document.fonts&&document.fonts.addEventListener&&document.fonts.addEventListener("loadingdone",()=>fitMushaf())}catch(e){}
+try{document.fonts&&document.fonts.ready.then(()=>fitMushaf());document.fonts&&document.fonts.addEventListener&&document.fonts.addEventListener("loadingdone",()=>{fitMushaf();try{fitQcf()}catch(e){}})}catch(e){}
 
 /* ============ المصحف بخطوط مجمع الملك فهد QCF4 (مطابق للمطبوع سطراً وكلمة) ============ */
 const QCF_CDN="https://cdn.jsdelivr.net/npm/quran-qcf4@1.1.0/";
@@ -3102,8 +3103,8 @@ function qcfPageHTML(d,tm){let h="";
 function fitQcf(){const el=document.querySelector(".mushaf.mqcf");if(!el)return;
   const cs=getComputedStyle(el);const cw=el.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);if(cw<=0)return;
   /* حجم واحد لكل الصفحات: أعرض سطر في المصحف كله = 17.44em (ص577) */
-  const fs=Math.min(cw/17.6,36);el.style.fontSize=fs.toFixed(2)+"px";
-  el.querySelectorAll(".ql").forEach(l=>l.classList.add("qshort"))}
+  let fs=Math.min(cw/17.6,36);el.style.fontSize=fs.toFixed(2)+"px";const L=[...el.querySelectorAll(".ql")];let mx=0;L.forEach(l=>{let w=0;for(const c of l.children)w+=c.getBoundingClientRect().width;if(w>mx)mx=w});if(mx>cw*1.005){fs=fs*cw/mx*.98;el.style.fontSize=fs.toFixed(2)+"px"}
+  L.forEach(l=>l.classList.add("qshort"))}
 function ring(done,total,size){size=size||76;const r=size/2-7,C=2*Math.PI*r,p=total?done/total:0;
   return `<div class="ring" style="width:${size}px;height:${size}px" role="img" aria-label="أنجزت ${done} من ${total}"><svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="7"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${p===1?"var(--ok)":"var(--primary)"}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p)}" transform="rotate(-90 ${size/2} ${size/2})"/></svg><div class="ring-t"><b>${done}/${total}</b></div></div>`}
 function taskTap(t,ro){
