@@ -285,6 +285,14 @@ tr:last-child td{border-bottom:0}
  body.staff .hero h1{font-size:1.3rem}
  .hero .toolbar{width:100%}
  .hero .toolbar select{flex:1 1 40%;min-width:0}
+.hero .toolbar select.m-jz{flex:0 0 auto;width:auto;min-width:92px;max-width:118px}
+.m-pg{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;width:88px;height:34px;box-sizing:border-box;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);cursor:text}
+.m-pg svg{flex:none}
+.m-pg input{width:100%;min-width:0;border:0!important;background:transparent!important;padding:0!important;font:inherit;font-size:.9rem;color:var(--ink);text-align:center;-moz-appearance:textfield}
+.m-pg input::-webkit-outer-spin-button,.m-pg input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.m-pg:focus-within{border-color:var(--primary);color:var(--primary)}
+#mreader .rd-spread .mushaf.m15{justify-content:space-between}
+
  .hero .toolbar input[type=date]{flex:1 1 130px;min-width:130px}
  .arow .aname{order:1}.arow .btn.ghost{order:2}.arow .seg{order:3}
  .seg button{padding:9px 11px;font-size:.86rem}
@@ -320,6 +328,12 @@ tr:last-child td{border-bottom:0}
 }
 body.app .app-top .top-in{padding-block:8px}
 .app-date{white-space:nowrap;text-align:left;flex:none}
+body.app .app-top .top-in{flex-wrap:nowrap;align-items:center;gap:10px}
+body.app .app-top .brand{flex:1;min-width:0}
+body.app .app-top .b-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-date2{font-size:.72rem;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+body.app .app-top .app-acts{flex-wrap:nowrap;align-items:center}
+
 @media (max-width:420px){.app-date{display:none}}
 body.app .top::after{height:2px}
 .app-stack{display:grid;gap:14px}
