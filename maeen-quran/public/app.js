@@ -2666,7 +2666,7 @@ function rFitAll(o){o=o||document.getElementById("mreader");if(!o)return;const m
 try{document.fonts&&document.fonts.addEventListener&&document.fonts.addEventListener("loadingdone",()=>{if(RD.on)setTimeout(()=>rFitAll(),30)})}catch(e){}
 function rNav(d){let n;if(rSpread()){const a0=RD.pg%2?RD.pg:RD.pg-1;n=a0+2*d}else n=RD.pg+d;n=Math.min(604,Math.max(1,n));if(n===RD.pg)return;RD.g=null;rGo(n)}
 /* ===== بحث المصحف (آية / سورة / صفحة / جزء) ===== */
-function mSearchRes(q0){if(!Q)return"";const q=rDig((q0||"").trim());if(!q)return `<div class="ms-tips"><span>اكتب رقماً ← صفحة أو سورة أو جزء</span><span>اسم سورة ← «الكهف»</span><span>سورة وآية ← «البقرة ٢٥٥»</span><span>كلمات من الآية ← «فلما فصل طالوت»</span></div>`;
+function mSearchRes(q0){if(!Q)return"";const q=rDig((q0||"").trim());if(!q)return "";
   const rn=x=>zNorm(x).replace(/[اءٔإأآ]/g,"");const R=[];const it=(p,g,t,sub)=>`<button class="ms-it" data-act="mGo" data-v="${p}" data-g="${g==null?"":g}"><span><b>${t}</b>${sub?`<small>${sub}</small>`:""}</span><em>ص ${AR_D(p)}</em></button>`;
   const sur=i=>it(pageOf(Q.ss[i]),Q.ss[i],`${AR_D(i+1)}. سورة ${esc(Q.s[i][0])}`,`${rMk(i)?"مكية":"مدنية"} · ${AR_D(Q.s[i][1])} آية`);
   if(/^[0-9]+$/.test(q)){const n=+q;if(n>=1&&n<=604)R.push(it(n,null,`الصفحة ${AR_D(n)}`,esc("سورة "+Q.s[sa(Q.p[n-1])[0]][0])));if(n>=1&&n<=114)R.push(sur(n-1));if(n>=1&&n<=30)R.push(it(pageOf(Q.j[n-1]),Q.j[n-1],`الجزء ${AR_D(n)}`,esc(JUZ_NAMES[n-1]||"")))}
@@ -2693,7 +2693,7 @@ function rBind(o){let sx=0,sy=0,moved=false,t0=0;
   o.addEventListener("pointermove",e=>{if(sx&&Math.abs(e.clientX-sx)>12)moved=true});
   o.addEventListener("pointerup",e=>{if(!sx)return;const dx=e.clientX-sx,dy=e.clientY-sy;sx=0;if(!e.target.closest(".rd-stage")||e.target.closest(".rd-nav"))return;
     if(Math.abs(dx)>50&&Math.abs(dy)<80){rNav(dx>0?1:-1);return}
-    if(moved||Date.now()-t0>600)return;const w=e.target.closest("[data-rk]");if(w){RD.g=+w.dataset.rk.split(":")[0];RD.sheet="ayah";rRender();return}
+    if(moved||Date.now()-t0>600)return;{const W=innerWidth,x=e.clientX,ez=Math.min(90,Math.max(44,W*.13));if(!RD.sheet&&x<ez){rNav(1);return}if(!RD.sheet&&x>W-ez){rNav(-1);return}}const w=e.target.closest("[data-rk]");if(w){RD.g=+w.dataset.rk.split(":")[0];RD.sheet="ayah";rRender();return}
     if(RD.sheet){RD.sheet=null;RD.g=null;rRender();return}RD.chrome=!RD.chrome;o.classList.toggle("rd-hide",!RD.chrome)});
   o.addEventListener("scroll",e=>{const st=e.target;if(!st.classList||!st.classList.contains("rd-strip")||RD._stProg)return;rStripScrub(st)},true);
   o.addEventListener("pointerdown",e=>{const st=e.target.closest(".rd-strip");if(!st)return;RD._stDown=true;RD._stMv=false;if(e.pointerType!=="mouse")return;const x0=e.clientX,sl=st.scrollLeft;st.style.scrollSnapType="none";st.style.scrollBehavior="auto";
