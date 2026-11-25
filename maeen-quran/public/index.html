@@ -346,6 +346,15 @@ tr:last-child td{border-bottom:0}
 }
 body.app .app-top .top-in{padding-block:8px}
 .app-date{white-space:nowrap;text-align:left;flex:none}
+body.staff .top .b-sub.app-date2{display:block}
+@media (max-width:700px){body.staff .top .top-in{flex-wrap:nowrap;gap:8px}body.staff .top .who{flex:none;gap:4px}
+ body.staff .top .divsel{position:relative;width:34px;height:34px;padding:0;justify-content:center;border-radius:50%;flex:none}
+ body.staff .top .divsel .dv-dot{position:absolute;top:5px;inset-inline-end:5px;width:7px;height:7px;pointer-events:none}
+ body.staff .top .divsel select{position:absolute;inset:0;width:100%;max-width:none;height:100%;opacity:0;cursor:pointer}
+ body.staff .top .divsel::before{content:"";width:16px;height:16px;background:currentColor;color:var(--ink);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3 6h18M6 12h12M10 18h4'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3 6h18M6 12h12M10 18h4'/%3E%3C/svg%3E") center/contain no-repeat}
+ body.staff .top .brand .b-par{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.top .brand{min-width:0}
+.top .b-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.app .app-top .top-in{flex-wrap:nowrap;align-items:center;gap:10px}
 body.app .app-top .brand{flex:1;min-width:0}
 body.app .app-top .b-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
