@@ -1821,6 +1821,11 @@ button,.btn,nav,.tab,.pill,.chip{-webkit-user-select:none;user-select:none;-webk
 #mreader .rd-bk{display:grid;place-items:center;align-content:center;gap:0}#mreader .rd-bk small{font-size:.62rem;line-height:1}#mreader .rd-bk svg{width:18px;height:18px}#mreader .rd-bk.off{visibility:hidden}
 #mreader .rd-sl{display:none!important}
 #mreader.rd-has-sheet .rd-strip-row{display:none}
+
+/* خط الأحاديث والأذكار: SF Arabic (خط آبل) وبدائله المطابقة */
+:root{--hadith-font:"SF Arabic","SF Arabic Rounded",-apple-system,BlinkMacSystemFont,"Noto Sans Arabic","Segoe UI","Geeza Pro",system-ui,sans-serif}
+.hd-t,.zad-hod p,.dk-t,.fz-dk,.fz-it blockquote{font-family:var(--hadith-font)!important;font-weight:400!important;letter-spacing:0;-webkit-font-smoothing:antialiased}
+.hd-t,.dk-t{font-size:1.2rem;line-height:2}
 </style>
 </head>
 <body>
