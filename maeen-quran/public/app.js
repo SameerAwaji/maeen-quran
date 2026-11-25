@@ -1735,7 +1735,7 @@ function mushafView(m){
    <span class="mlegend mt-t"><span class="dot"></span>تنبيه <b class="num">${cnt.t}</b></span><span class="mlegend mt-l"><span class="dot"></span>تلقين <b class="num">${cnt.l}</b></span>
    <button class="btn sm pri" data-act="saveTasmee" ${ui.mstu&&(cnt.t+cnt.l)?"":"disabled"}>حفظ في سجل اليوم</button><button class="btn sm" data-act="clearMarks">مسح العلامات</button></div>`:`<span class="hint">فعّله أثناء تسميع الطالب، ثم اضغط على الكلمة في المصحف لتعليم الملاحظة.</span>`}</div>
    ${tm?`<p class="hint" style="margin-top:6px">اضغط الكلمة: <b>الأولى</b> <b style="color:var(--yel)">تنبيه</b>، <b>الثانية</b> <b style="color:var(--red)">تلقين</b>، <b>الثالثة</b> تزيلها. الضغط المطوّل على الآية يفتح خياراتها.</p>`:""}</div>`:""}
-  <div id="rd-host" class="rd-host"></div>
+  <div id="rd-host" class="rd-host" style="${RD._hostH?`height:${RD._hostH}px`:""}"></div>
   <p class="hint rd-attr">النص بخط مجمع الملك فهد لطباعة المصحف الشريف، وتوزيع الصفحات والأسطر من مصحف المدينة (بيانات quran.ws، رخصة CC BY 4.0).</p>`;
 }
 
@@ -2581,9 +2581,10 @@ function rOpen(pg){if(!Q){loadQuran();toast("جاري تحميل المصحف…
   RD.on=true;RD.embedOn=false;RD.full=true;RD.pg=Math.min(604,Math.max(1,pg||zls.get("rlast",0)||ui.mpage||1));RD.openPg=RD.pg;RD.prev=null;RD.sheet=null;RD.g=null;RD.chrome=false;
   let o=document.getElementById("mreader");if(!o){o=document.createElement("div");o.id="mreader";o.setAttribute("role","dialog");o.setAttribute("aria-label","المصحف الشريف");document.body.appendChild(o);rBind(o)}
   document.body.classList.add("rd-open");try{const de=document.documentElement;if(de.requestFullscreen&&!document.fullscreenElement&&innerWidth<1100)de.requestFullscreen().catch(()=>{})}catch(e){}rRender()}
+function rTmSync(){const c={t:0,l:0};Object.values(ui.marks).forEach(v=>{if(v)c[MT(v.t)]++});const card=document.querySelector(".card.tasmee");if(!card)return;const a=card.querySelector(".mlegend.mt-t .num"),b=card.querySelector(".mlegend.mt-l .num");if(a)a.textContent=c.t;if(b)b.textContent=c.l;const sv=card.querySelector('[data-act="saveTasmee"]');if(sv)sv.disabled=!(ui.mstu&&(c.t+c.l))}
 function rTasmee(){try{const m=me();return !!(m&&isStaff(m)&&ui.tasmee)}catch(e){return false}}
 function rEmbedH(){const _o=document.getElementById("mreader");const host=document.getElementById("rd-host");if(!host)return;const hd=document.querySelector("header.top");const tb=document.querySelector(".tabbar");const tbh=tb&&getComputedStyle(tb).display!=="none"&&getComputedStyle(tb).position==="fixed"?tb.offsetHeight:0;
-  const h=Math.max(380,innerHeight-(hd?hd.offsetHeight:0)-tbh-20);host.style.height=h+"px";if(_o){_o.style.setProperty("--rdW",host.clientWidth+"px");_o.style.setProperty("--rdH",h+"px")}}
+  const h=Math.max(380,innerHeight-(hd?hd.offsetHeight:0)-tbh-20);host.style.height=h+"px";RD._hostH=h;if(_o){_o.style.setProperty("--rdW",host.clientWidth+"px");_o.style.setProperty("--rdH",h+"px")}}
 function rMountEmbed(){const host=document.getElementById("rd-host");if(!host||!Q)return;let o=RD.el&&RD.el.id==="mreader"?RD.el:document.getElementById("mreader");
   if(!o){o=document.createElement("div");o.id="mreader";o.setAttribute("aria-label","المصحف الشريف");rBind(o)}RD.el=o;
   if(!RD.embedOn){RD.embedOn=true;RD.full=false;RD.on=true;RD.pg=Math.min(604,Math.max(1,ui.mpage||zls.get("rlast",0)||1));RD.openPg=RD.pg;RD.sheet=null;RD.g=null;RD.chrome=false;RD.prev=null}
@@ -2725,10 +2726,15 @@ function rRender(keepScroll){const o=document.getElementById("mreader");if(!o||!
   requestAnimationFrame(()=>{const th=o.querySelector(".rd-th.cur");if(th){const st=o.querySelector(".rd-strip");if(st){RD._stProg=true;st.style.scrollBehavior="auto";{const sr=st.getBoundingClientRect(),tr=th.getBoundingClientRect();st.scrollLeft+=(tr.left+tr.width/2)-(sr.left+sr.width/2)}o.scrollTop=0;st.style.scrollBehavior="";setTimeout(()=>{RD._stProg=false},120)}}rFitAll(o);requestAnimationFrame(()=>{const sg=o.querySelector(".rd-stage");if(sg)sg.classList.remove("rd-fitting")})});
   RD._noFade=false;if(st){const nb=o.querySelector(".rd-sb");if(nb)nb.scrollTop=st}}
 function rIdxScroll(){if(RD.sheet!=="idx")return;requestAnimationFrame(()=>{const sb=document.querySelector("#mreader .rd-sb");if(!sb)return;const c=sb.querySelector(".rd-jh.cur")||sb.querySelector(".rd-li.cur");if(c)sb.scrollTop=Math.max(0,c.offsetTop-90)})}
-function rFitAll(o){o=o||document.getElementById("mreader");if(!o)return;const ms=[...o.querySelectorAll(".rd-page .mushaf")];ms.forEach(m=>{m.style.minHeight="";try{if(m.dataset.kind==="mqcf")fitQcf(m);else if(m.dataset.kind==="m15")fitMushaf(m)}catch(e){}});
-  const st=o.querySelector(".rd-stage");if(st){const cs=getComputedStyle(st);const SH=st.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);ms.forEach(m=>{if(m.dataset.kind!=="mqcf"||m.classList.contains("q-open"))return;const pgEl=m.closest(".rd-page");const extra=pgEl?pgEl.offsetHeight-m.offsetHeight:44;const avail=SH-extra-2;let fs=parseFloat(m.style.fontSize)||20;if(15*1.6*fs+8>avail&&avail>120){fs=(avail-8)/(15*1.6);m.style.fontSize=fs.toFixed(2)+"px"}m.style.setProperty("height",Math.max(15*1.6*fs+8,Math.min(avail,15*2.45*fs)).toFixed(1)+"px","important")})}
-  if(ms.length===2){const k=ms.filter(m=>m.dataset.kind===ms[0].dataset.kind&&!m.classList.contains("m-open")&&!m.classList.contains("q-open"));if(k.length===2){const f=Math.min(...k.map(m=>parseFloat(m.style.fontSize)||32));k.forEach(m=>m.style.fontSize=f.toFixed(2)+"px")}
-    ms.forEach(m=>{if(m.dataset.kind==="mqcf"&&!m.classList.contains("q-open")){const fs=parseFloat(m.style.fontSize);const cur=parseFloat(m.style.height)||0;m.style.setProperty("height",Math.max(15*1.8*fs+8,Math.min(cur,15*2.45*fs)).toFixed(1)+"px","important")}});
+function rFitAll(o){o=o||document.getElementById("mreader");if(!o)return;const ms=[...o.querySelectorAll(".rd-stage .rd-page .mushaf")];ms.forEach(m=>{m.style.minHeight="";try{if(m.dataset.kind==="mqcf")fitQcf(m);else if(m.dataset.kind==="m15")fitMushaf(m)}catch(e){}});
+  const st=o.querySelector(".rd-stage");if(!st)return;const cs=getComputedStyle(st);const SH=st.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+  const availOf=m=>{const pgEl=m.closest(".rd-page");let extra=0;if(pgEl){const pc=getComputedStyle(pgEl);extra=parseFloat(pc.paddingTop)+parseFloat(pc.paddingBottom)+parseFloat(pc.borderTopWidth)+parseFloat(pc.borderBottomWidth);[...pgEl.children].forEach(c=>{if(c===m)return;const s2=getComputedStyle(c);if(s2.display==="none"||s2.position==="absolute")return;extra+=c.offsetHeight+parseFloat(s2.marginTop)+parseFloat(s2.marginBottom)});const s3=getComputedStyle(m);extra+=parseFloat(s3.marginTop)+parseFloat(s3.marginBottom)}return SH-extra-2};
+  /* قياس المحتوى الفعلي وتصغير الخط حتى تظهر الصفحة كاملة */
+  const need=m=>{m.style.setProperty("height","auto","important");return m.scrollHeight};
+  const fit=(m,fs)=>{const av=availOf(m);if(av<120)return;for(let k=0;k<5;k++){m.style.fontSize=fs.toFixed(2)+"px";const n=need(m);if(n<=av+.5)break;fs=fs*Math.min(.995,av/n)}const n=need(m);m.style.setProperty("height",Math.max(n,Math.min(av,n*1.22)).toFixed(1)+"px","important");return fs};
+  const qs=ms.filter(m=>m.dataset.kind==="mqcf"&&!m.classList.contains("q-open"));const F=qs.map(m=>fit(m,parseFloat(m.style.fontSize)||20));
+  if(qs.length===2&&F[0]&&F[1]){const f=Math.min(F[0],F[1]);qs.forEach(m=>fit(m,f))}
+  if(ms.length===2){const k=ms.filter(m=>m.dataset.kind==="m15"&&!m.classList.contains("m-open"));if(k.length===2){const f=Math.min(...k.map(m=>parseFloat(m.style.fontSize)||32));k.forEach(m=>m.style.fontSize=f.toFixed(2)+"px")}
     const h=Math.max(...ms.map(m=>m.offsetHeight));ms.forEach(m=>{m.style.minHeight=h+"px"})}}
 try{document.fonts&&document.fonts.addEventListener&&document.fonts.addEventListener("loadingdone",()=>{if(RD.on)setTimeout(()=>rFitAll(),30)})}catch(e){}
 /* تقليب الصفحات بالسحب مثل التطبيق: الصفحة تتبع الإصبع والتالية تدخل من الجانب */
@@ -2784,7 +2790,7 @@ function rBind(o){let sx=0,sy=0,moved=false,t0=0;
   o.addEventListener("pointerup",e=>{clearTimeout(RD._lpT);if(RD._lpDone){RD._lpDone=false;sx=0;return}if(!sx)return;const dx=e.clientX-sx,dy=e.clientY-sy;sx=0;if(RD._drag){RD._drag=false;const v=Math.abs(dx)/Math.max(1,Date.now()-t0);rDragEnd(dx,v);return}if(!e.target.closest(".rd-stage")||e.target.closest(".rd-nav"))return;
     if(Math.abs(dx)>50&&Math.abs(dy)<80){rNav(dx<0?1:-1);return}
     if(moved||Date.now()-t0>600)return;
-    if(!RD.sheet&&rTasmee()){const w=e.target.closest("[data-rk]");if(w){const k=w.dataset.rk;const x=ui.marks[k];if(!x){ui.marks[k]={t:"t",c:null,h:null};ui.mpick=k}else if(MT(x.t)==="t"){x.t="l";ui.mpick=k}else{delete ui.marks[k];if(ui.mpick===k)ui.mpick=null}ui.mlast=ui.marks[k]?k:null;if(RD.embedOn&&!RD.full)render();else rRender(true);return}}
+    if(!RD.sheet&&rTasmee()){const w=e.target.closest("[data-rk]");if(w){const k=w.dataset.rk;const x=ui.marks[k];if(!x){ui.marks[k]={t:"t",c:null,h:null};ui.mpick=k}else if(MT(x.t)==="t"){x.t="l";ui.mpick=k}else{delete ui.marks[k];if(ui.mpick===k)ui.mpick=null}ui.mlast=ui.marks[k]?k:null;rRender(true);rTmSync();return}}
     {const W=innerWidth,x=e.clientX,ez=Math.min(90,Math.max(44,W*.13));if(!RD.sheet&&x<ez){rNav(1);return}if(!RD.sheet&&x>W-ez){rNav(-1);return}}
     if(RD.sheet){RD.sheet=null;RD.g=null;rRender();return}RD.chrome=!RD.chrome;o.classList.toggle("rd-hide",!RD.chrome)});
   o.addEventListener("scroll",e=>{const st=e.target;if(!st.classList||!st.classList.contains("rd-strip")||RD._stProg)return;rStripScrub(st)},true);
