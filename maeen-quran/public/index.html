@@ -1650,6 +1650,12 @@ body.rd-open #qbar{display:none!important}
 .khc-sum b{font-size:.9rem}
 .kh-days button.khc-t b{font-size:1.15rem}
 #mreader .rd-bot{grid-template-columns:minmax(0,1fr)}
+html,body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
+body{touch-action:manipulation}
+button,.btn,nav,.tab,.pill,.chip{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+@media (pointer:coarse){input,select,textarea{font-size:16px!important}}
+#mreader .rd-page .mushaf{flex:none}
+
 #mreader .rd-strip-row{position:relative}
 #mreader .rd-strip{cursor:grab;touch-action:pan-x}
 #mreader .rd-strip:active{cursor:grabbing}

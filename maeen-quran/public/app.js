@@ -1082,7 +1082,7 @@ const A={
     const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,1)],{type:"application/json"}));a.download=`هوية-${(cfg().circleName||"المنصة").replace(/[\\/:*?"<>|]/g,"")}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)},
   idReset:()=>openModal("استعادة الهوية الافتراضية","<p>سيعود الشعار والألوان والخطوط والنصوص التعريفية إلى الإعداد الأصلي. المسميات وترتيب القوائم لا تتغير.</p><p class=\"hint\">تظهر كمعاينة حتى تضغط «حفظ التعديلات».</p>","idReset",{},"تأكيد الاستعادة"),
   clearMarks:()=>{const n=Object.keys(ui.marks).length;if(!n){toast("لا توجد علامات لحذفها");return}openModal("حذف كل العلامات",`<p>سيتم حذف <b class="num">${n}</b> علامة (تنبيه وتلقين) من هذه الجلسة. هل أنت متأكد؟</p><p class="hint">لا يمكن التراجع عن هذا الحذف.</p>`,"clrMarks",{},"تأكيد الحذف")},
-  mNav:el=>{ui.mpage=Math.min(604,Math.max(1,(ui.mpage||1)+(+el.dataset.n)));render();window.scrollTo(0,0)},
+  mNav:el=>{const y=scrollY;ui.mpage=Math.min(604,Math.max(1,(ui.mpage||1)+(+el.dataset.n)));render();scrollTo(0,y)},
   mushafFor:el=>{const s=get("members",el.dataset.id);if(s){ui.mstu=s.id;ui.tasmee=true;ui.marks={};const l=logsOf(s.id)[0];ui.msurah=(l&&(l.newSurah||l.tSurah))||(s.plan&&s.plan.startPoint)||null}go("mushaf")},
   saveTasmee:()=>{const s=get("members",ui.mstu);if(!s)return;if(!canAttend(me(),s)){toast("لا تملك صلاحية تسجيل متابعة هذا الطالب","err");return}
     const list=[];Object.entries(ui.marks).forEach(([k,x])=>{if(!x)return;const[g,w]=k.split(":").map(Number);const[si,a]=sa(g);list.push({g,w,c:x.c,h:x.h,t:MT(x.t),word:(wtext(g,w)),sn:Q.s[si][0],a})});
@@ -1307,8 +1307,8 @@ const CH={
   perm:el=>{const roles=permsDoc();roles[el.dataset.r].perms[el.dataset.k]=el.checked;stageConfig("perms",{roles});},
   pattscope:el=>{const roles=permsDoc();roles[el.dataset.r].attScope=el.value;stageConfig("perms",{roles});},
   pscope:el=>{const roles=permsDoc();roles[el.dataset.r].scope=el.value;stageConfig("perms",{roles});},
-  mSurah:el=>{ui.mpage=pageOf(Q.ss[+el.value]);render()},
-  mJuz:el=>{ui.mpage=pageOf(Q.j[+el.value]);render()},
+  mSurah:el=>{const y=scrollY;ui.mpage=pageOf(Q.ss[+el.value]);render();scrollTo(0,y)},
+  mJuz:el=>{const y=scrollY;ui.mpage=pageOf(Q.j[+el.value]);render();scrollTo(0,y)},
   mPage:el=>{ui.mpage=Math.min(604,Math.max(1,n0(el.value)||1));render()},
   tasmee:el=>{ui.tasmee=el.checked;if(!el.checked){ui.marks={};ui.mpick=null}render()},
   mStu:el=>{ui.mstu=el.value;render()},
@@ -2557,7 +2557,7 @@ function rPageHTML(pg){let h="",kind="";const QD=qcfLoad(pg);
   if(QD&&QD.lines){h=qcfPageHTML(QD,true);kind="mqcf"}else if(MQ){h=mqPageHTML(pg,true);kind="m15"}else{const f=Q.p[pg-1],t=(pg<604?Q.p[pg]:Q.v.length)-1;let para=[];
     for(let g=f;g<=t;g++){const[si,a]=sa(g);if(a===1){if(para.length){h+=`<p class="mp">${para.join(" ")}</p>`;para=[]}h+=`<div class="sura-h"><span>سورة ${Q.s[si][0]}</span></div>`;if(si!==0&&si!==8)h+=`<div class="basm">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</div>`}
       para.push(`<span class="ay">${Q.v[g].split(" ").map((w,wi)=>`<span class="w" data-rk="${g}:${wi}">${w}</span>`).join(" ")}<span class="an">${AR_D(a)}</span></span>`)}if(para.length)h+=`<p class="mp">${para.join(" ")}</p>`}
-  if(QD&&QD.loading&&!RD.poll){RD.poll=1;const tick=n=>{if(!RD.on||RD.pg!==pg){RD.poll=0;return}if(QCFP[pg]&&QCFP[pg].lines){RD.poll=0;rRender();return}if(!QCFP[pg]||n>40){RD.poll=0;return}setTimeout(()=>tick(n+1),250)};setTimeout(()=>tick(0),250)}
+  if(QD&&QD.loading){RD.wait=RD.wait||{};if(!RD.wait[pg]){RD.wait[pg]=1;const tick=n=>{if(!RD.on){delete RD.wait[pg];return}const vis=rSpread()?[RD.pg%2?RD.pg:RD.pg-1,(RD.pg%2?RD.pg:RD.pg-1)+1]:[RD.pg];if(!vis.includes(pg)){delete RD.wait[pg];return}if(QCFP[pg]&&QCFP[pg].lines){delete RD.wait[pg];rRender(true);return}if(!QCFP[pg]||n>60){delete RD.wait[pg];if(!QCFP[pg]&&!QCF_OFF)setTimeout(()=>{if(RD.on)rRender(true)},800);return}setTimeout(()=>tick(n+1),200)};setTimeout(()=>tick(0),200)}}
   setTimeout(()=>{qcfLoad(Math.min(604,pg+1));qcfLoad(Math.max(1,pg-1))},500);
   return {h:h.replace(/data-act="word" data-k="/g,'data-rk="'),kind}}
 function rSheetHTML(){const s=RD.sheet;if(!s)return"";let t="",b="";const pg=RD.pg;
@@ -2661,7 +2661,9 @@ function rRender(keepScroll){const o=document.getElementById("mreader");if(!o||!
   if(st){const nb=o.querySelector(".rd-sb");if(nb)nb.scrollTop=st}}
 function rIdxScroll(){if(RD.sheet!=="idx")return;requestAnimationFrame(()=>{const sb=document.querySelector("#mreader .rd-sb");if(!sb)return;const c=sb.querySelector(".rd-jh.cur")||sb.querySelector(".rd-li.cur");if(c)sb.scrollTop=Math.max(0,c.offsetTop-90)})}
 function rFitAll(o){o=o||document.getElementById("mreader");if(!o)return;const ms=[...o.querySelectorAll(".rd-page .mushaf")];ms.forEach(m=>{m.style.minHeight="";try{if(m.dataset.kind==="mqcf")fitQcf(m);else if(m.dataset.kind==="m15")fitMushaf(m)}catch(e){}});
+  const st=o.querySelector(".rd-stage");if(st){const cs=getComputedStyle(st);const SH=st.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);ms.forEach(m=>{if(m.dataset.kind!=="mqcf"||m.classList.contains("q-open"))return;const pgEl=m.closest(".rd-page");const extra=pgEl?pgEl.offsetHeight-m.offsetHeight:44;const avail=SH-extra-2;let fs=parseFloat(m.style.fontSize)||20;if(15*1.8*fs+8>avail&&avail>120){fs=(avail-8)/(15*1.8);m.style.fontSize=fs.toFixed(2)+"px"}m.style.setProperty("height",(15*1.8*fs+8).toFixed(1)+"px","important")})}
   if(ms.length===2){const k=ms.filter(m=>m.dataset.kind===ms[0].dataset.kind&&!m.classList.contains("m-open")&&!m.classList.contains("q-open"));if(k.length===2){const f=Math.min(...k.map(m=>parseFloat(m.style.fontSize)||32));k.forEach(m=>m.style.fontSize=f.toFixed(2)+"px")}
+    ms.forEach(m=>{if(m.dataset.kind==="mqcf"&&!m.classList.contains("q-open"))m.style.setProperty("height",(15*1.8*parseFloat(m.style.fontSize)+8).toFixed(1)+"px","important")});
     const h=Math.max(...ms.map(m=>m.offsetHeight));ms.forEach(m=>{m.style.minHeight=h+"px"})}}
 try{document.fonts&&document.fonts.addEventListener&&document.fonts.addEventListener("loadingdone",()=>{if(RD.on)setTimeout(()=>rFitAll(),30)})}catch(e){}
 function rNav(d){let n;if(rSpread()){const a0=RD.pg%2?RD.pg:RD.pg-1;n=a0+2*d}else n=RD.pg+d;n=Math.min(604,Math.max(1,n));if(n===RD.pg)return;RD.g=null;rGo(n)}
@@ -2685,9 +2687,12 @@ function zmFit(){document.querySelectorAll(".zmw").forEach(w=>{const z=w.querySe
   z.style.height="auto";const nh=z.offsetHeight;z.style.height="";if(!nh)return;let f=Math.min(W<600?1:1.5,Math.max(1,(H-2)/nh));
   if(f>1.02){z.style.zoom=f;z.style.height=(H/f)+"px";let k=0;while(k++<8&&f>1&&(z.scrollWidth>z.clientWidth+1||z.scrollHeight>z.clientHeight+1)){f=Math.max(1,f-.06);z.style.zoom=f;z.style.height=(H/f)+"px"}if(f<=1.02){z.style.zoom="";z.style.height=""}}})}
 (function(){let t;const go=()=>{clearTimeout(t);t=setTimeout(zmFit,60)};try{new MutationObserver(m=>{if(m.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches&&(n.matches(".zmw,.zad-mini")||n.querySelector&&n.querySelector(".zmw"))))))go()}).observe(document.body,{childList:true,subtree:true})}catch(e){}addEventListener("resize",go);try{const ro=new ResizeObserver(go);setInterval(()=>{document.querySelectorAll(".zmw").forEach(w=>{if(!w.__ro){w.__ro=1;ro.observe(w)}})},1500)}catch(e){}})();
+/* سحب صفحة المصحف (خارج وضع القراءة) لتقليبها مثل التطبيق، بدون القفز لأعلى */
+(function(){let sx=0,sy=0,t0=0,on=false;document.addEventListener("touchstart",e=>{const w=e.target.closest&&e.target.closest(".mushaf-wrap");if(!w||ui.view!=="mushaf"||ui.tasmee){on=false;return}const t=e.touches[0];sx=t.clientX;sy=t.clientY;t0=Date.now();on=true},{passive:true});
+  document.addEventListener("touchend",e=>{if(!on)return;on=false;const t=e.changedTouches[0];const dx=t.clientX-sx,dy=t.clientY-sy;if(Math.abs(dx)>60&&Math.abs(dy)<50&&Date.now()-t0<700){const y=scrollY;ui.mpage=Math.min(604,Math.max(1,(ui.mpage||1)+(dx>0?1:-1)));render();scrollTo(0,y)}},{passive:true})})();
 function rStripScrub(st){const r=st.getBoundingClientRect();const cx=r.left+r.width/2;let best=null,bd=1e9;st.querySelectorAll(".rd-th").forEach(t=>{const b=t.getBoundingClientRect();const d=Math.abs(b.left+b.width/2-cx);if(d<bd){bd=d;best=t}});if(!best)return;const p=+best.dataset.v;
   st.querySelectorAll(".rd-th.hov").forEach(t=>t!==best&&t.classList.remove("hov"));best.classList.add("hov");const bub=document.querySelector("#mreader .rd-sbub");if(bub){const[si]=sa(Q.p[p-1]);bub.innerHTML=`<b>${AR_D(p)}</b><small>${esc(Q.s[si][0])} · الجزء ${AR_D(juzOf(Q.p[p-1]))}</small>`;bub.hidden=false}
-  clearTimeout(RD._stT);RD._stT=setTimeout(()=>{if(RD._stDown){rStripScrub(st);return}if(bub)bub.hidden=true;if(p!==RD.pg){RD.g=null;rGo(p)}},320)}
+  if(RD._stIgn&&Date.now()<RD._stIgn)return;clearTimeout(RD._stT);RD._stT=setTimeout(()=>{if(RD._stIgn&&Date.now()<RD._stIgn)return;if(RD._stDown){rStripScrub(st);return}if(bub)bub.hidden=true;if(p!==RD.pg){RD.g=null;rGo(p)}},320)}
 function rBind(o){let sx=0,sy=0,moved=false,t0=0;
   o.addEventListener("pointerdown",e=>{if(!e.target.closest(".rd-stage"))return;sx=e.clientX;sy=e.clientY;moved=false;t0=Date.now()});
   o.addEventListener("pointermove",e=>{if(sx&&Math.abs(e.clientX-sx)>12)moved=true});
@@ -2701,7 +2706,7 @@ function rBind(o){let sx=0,sy=0,moved=false,t0=0;
   ["pointerup","pointercancel","touchend"].forEach(ev=>o.addEventListener(ev,()=>{if(RD._stDown){RD._stDown=false}},true));
   o.addEventListener("touchstart",e=>{if(e.target.closest(".rd-strip"))RD._stDown=true},{passive:true,capture:true});
   o.addEventListener("wheel",e=>{const st=e.target.closest(".rd-strip");if(!st)return;e.preventDefault();st.scrollLeft+=(Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:-e.deltaY)},{passive:false});
-  o.addEventListener("click",e=>{if(RD._stMv&&e.target.closest(".rd-strip")){RD._stMv=false;e.preventDefault();e.stopPropagation();return}const b=e.target.closest("[data-ract]");if(!b||!o.contains(b))return;e.preventDefault();e.stopPropagation();const v=b.dataset.v;const f=RACT[b.dataset.ract];if(f)f(v,b)},true);
+  o.addEventListener("click",e=>{if(RD._stMv&&e.target.closest(".rd-strip")){RD._stMv=false;e.preventDefault();e.stopPropagation();return}if(e.target.closest(".rd-th")){clearTimeout(RD._stT);RD._stIgn=Date.now()+900;RD._stDown=false;const bub=o.querySelector(".rd-sbub");if(bub)bub.hidden=true}const b=e.target.closest("[data-ract]");if(!b||!o.contains(b))return;e.preventDefault();e.stopPropagation();const v=b.dataset.v;const f=RACT[b.dataset.ract];if(f)f(v,b)},true);
   o.addEventListener("keydown",e=>{if(e.target.id==="rd-q"&&e.key==="Enter"){clearTimeout(window.__rdq);RD.q=e.target.value;rRender(true);const f=o.querySelector(".rd-sh-srch .rd-list .rd-li");if(f){e.preventDefault();f.click()}}});
   o.addEventListener("input",e=>{if(e.target.id!=="rd-q")return;RD.q=e.target.value;clearTimeout(window.__rdq);window.__rdq=setTimeout(()=>{rRender(true);const i=document.getElementById("rd-q");if(i){i.focus();const n=i.value.length;try{i.setSelectionRange(n,n)}catch(_){}}},350)});
   o.addEventListener("change",e=>{const el=e.target.closest("[data-rchange]");if(!el)return;const k=el.dataset.rchange;if(k==="slide")rGo(+el.value);else if(k==="rc"){try{localStorage.setItem("halaqa-rc",el.value)}catch(e){}toast("تم اختيار القارئ")}else if(k==="q"){}else if(k==="tfSrc"){RD.tfSrc=el.value;zls.set("rtaf",el.value);rRender(true)}});}
@@ -3355,13 +3360,13 @@ try{document.fonts&&document.fonts.ready.then(()=>fitMushaf());document.fonts&&d
 
 /* ============ المصحف بخطوط مجمع الملك فهد QCF4 (مطابق للمطبوع سطراً وكلمة) ============ */
 const QCF_CDN="https://cdn.jsdelivr.net/npm/quran-qcf4@1.1.0/";
-const QCFP={},QCFF={};let QCF_OFF=false;
+const QCFP={},QCFF={};let QCF_OFF=false,QCF_FAIL=0;
 function qcfFontLoad(name){if(QCFF[name])return QCFF[name];const file=name==="QCF4_QBSML"?name:name+"_W";
   QCFF[name]=new FontFace(name,`url(${QCF_CDN}fonts-woff2/${file}.woff2) format("woff2")`,{display:"block"}).load().then(f=>{document.fonts.add(f);return f});return QCFF[name]}
 function qcfLoad(pg){if(QCF_OFF||typeof FontFace==="undefined")return null;if(QCFP[pg])return QCFP[pg];QCFP[pg]={loading:true};
   fetch(`${QCF_CDN}pages/${String(pg).padStart(3,"0")}.json`).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(async d=>{
     await Promise.all([...new Set(d.lines.flatMap(l=>l.words.map(w=>w.font)))].map(qcfFontLoad));QCFP[pg]=d;if(ui.view==="mushaf"&&ui.mpage===pg)render()})
-  .catch(()=>{delete QCFP[pg];QCF_OFF=true;if(ui.view==="mushaf")render()});return QCFP[pg]}
+  .catch(()=>{delete QCFP[pg];if(++QCF_FAIL>=4)QCF_OFF=true;if(ui.view==="mushaf")render()});return QCFP[pg]}
 function qcfPageHTML(d,tm){let h="";
   d.lines.forEach(l=>{const W=l.words||[];if(!W.length){h+=`<div class="ql qc">&nbsp;</div>`;return}const t=W[0].type;
     if(t==="surah_header"){h+=`<div class="sura-h qh"><span style="font-family:'${W[0].font}'">${W[0].char}</span></div>`;return}
