@@ -1514,6 +1514,30 @@ main.wrap{min-width:0;overflow-x:clip}
  #mreader .rd-sheet{width:100%;max-height:88dvh;border-radius:22px 22px 0 0}#mreader .rd-sb{padding:4px 12px 16px}
  #mreader .rd-li{padding:10px 12px;gap:10px}#mreader .rd-days div{min-width:0;flex:1}
 }
+
+/* الأخطاء على المصحف */
+#mreader .mushaf .w.rd-mk-t{background:color-mix(in srgb,#f5c547 38%,transparent);box-shadow:inset 0 -2px 0 #e0a800;border-radius:4px}
+#mreader .mushaf .w.rd-mk-l{background:color-mix(in srgb,#ef4444 30%,transparent);box-shadow:inset 0 -2px 0 #dc2626;border-radius:4px}
+#mreader .rd-pf{position:relative}#mreader .rd-lg{position:absolute;inset-inline-start:6px;display:flex;gap:6px;font-family:var(--f-body);font-size:.7rem}
+#mreader .rd-lg span{padding:1px 8px;border-radius:999px;font-weight:700}#mreader .rd-lg .t{background:color-mix(in srgb,#f5c547 35%,transparent)}#mreader .rd-lg .l{background:color-mix(in srgb,#ef4444 30%,transparent)}
+#mreader .rd-ern{background:color-mix(in srgb,#ef4444 25%,transparent)!important;color:#ef4444}
+#mreader .rd-tg{display:flex;align-items:center;gap:12px}#mreader .rd-tg span{flex:1;display:grid;gap:2px}
+#mreader .rd-sw{position:relative;width:52px;height:30px;flex:none;border-radius:999px;border:0;background:var(--rd-card2);cursor:pointer}#mreader .rd-sw i{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}#mreader .rd-sw.on{background:var(--rd-acc)}#mreader .rd-sw.on i{right:25px}
+/* القوائم بملء الشاشة مع زر رجوع، والأزرار السفلية بعرض الشاشة */
+#mreader .rd-sbg{display:none}
+#mreader .rd-sheet{top:0;bottom:calc(84px + env(safe-area-inset-bottom,0px));max-height:none;width:100%;border-radius:0;box-shadow:none;padding-top:env(safe-area-inset-top,0px);animation:rdIn .2s ease-out}
+@keyframes rdIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+#mreader .rd-sheet header{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:12px 14px 8px}#mreader .rd-sheet header::before{display:none}
+#mreader .rd-sheet header b{text-align:center;font-size:1.1rem}#mreader .rd-hsp{width:44px}
+#mreader .rd-back svg{width:22px;height:22px}
+#mreader .rd-sb{max-width:680px;width:100%;margin:0 auto;box-sizing:border-box}
+#mreader .rd-bot{z-index:6;padding:0 0 env(safe-area-inset-bottom,0px)}
+#mreader .rd-sl{width:calc(100% - 24px)}
+#mreader .rd-tabs{width:100%;max-width:none;border-radius:22px 22px 0 0;border-inline:0;border-bottom:0;padding:6px 6px 8px;box-sizing:border-box}
+#mreader .rd-tabs button{min-height:54px}
+#mreader.rd-has-sheet .rd-sl{display:none}#mreader.rd-has-sheet .rd-top{visibility:hidden}
+#mreader.rd-has-sheet.rd-hide .rd-bot{transform:none;opacity:1;pointer-events:auto}
+#mreader .rd-stage{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}#mreader .rd-page{width:min(100%,calc((100dvh - 250px) * .64),720px)}@media (max-width:620px){#mreader .rd-stage{padding:56px 2px calc(146px + env(safe-area-inset-bottom,0px))}}
 </style>
 </head>
 <body>
