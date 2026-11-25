@@ -1924,6 +1924,40 @@ button,.btn,nav,.tab,.pill,.chip{-webkit-user-select:none;user-select:none;-webk
 .ms-srh em{font-style:normal;font-size:.95rem;color:var(--muted)}
 .ms-sq{margin:0;font-family:"KFGQPC Hafs","Amiri Quran",serif;font-size:1.45rem;line-height:2.05;color:var(--muted)}
 .ms-sq mark{background:none;color:var(--ink);font-weight:700}
+/* ===== المصحف المدمج + زر الخروج + تحديد الآية ===== */
+#mreader .rd-top{grid-template-columns:48px 48px 1fr 48px 48px!important;column-gap:6px!important}
+#mreader .rd-top>.rd-ic[data-ract=menu]{grid-column:1!important}
+#mreader .rd-top .rd-tt{grid-column:3!important}
+#mreader .rd-top>.rd-x4{grid-column:4!important}
+#mreader .rd-top>.rd-ic[data-ract=sheet]{grid-column:5!important}
+#mreader .rd-bk.dim{opacity:.45}
+#mreader .rd-bk{visibility:visible!important}
+#mreader .mushaf .w{-webkit-tap-highlight-color:transparent;outline:none!important}
+#mreader .mushaf .w:hover:not(.rd-cur):not(.rd-play):not(.rd-mk-t):not(.rd-mk-l):not(.wsel):not(.mk-t):not(.mk-l){background:transparent}
+#mreader .mushaf .w.rd-cur.rd-cur{background:rgba(255,255,255,.2)!important;box-shadow:0 0 0 2px rgba(255,255,255,.2);border-radius:3px}
+:root[data-theme="light"] #mreader .mushaf .w.rd-cur.rd-cur{background:rgba(0,0,0,.09)!important;box-shadow:0 0 0 2px rgba(0,0,0,.09)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #mreader .mushaf .w.rd-cur.rd-cur{background:rgba(0,0,0,.09)!important;box-shadow:0 0 0 2px rgba(0,0,0,.09)}}
+.rd-host{position:relative;width:100%;margin:0 auto 10px;border-radius:22px;overflow:hidden;background:#000}
+#mreader.rd-embed{position:relative!important;inset:auto!important;z-index:1!important;width:100%;height:100%;padding:0!important;border-radius:22px;overflow:hidden;transform:translateZ(0);contain:layout paint}
+#mreader.rd-embed .rd-sheet{max-height:100%}
+#mreader.rd-tm .mushaf .w{cursor:pointer}
+#mreader .mushaf .w.mk-t{background:color-mix(in srgb,#f5c547 45%,transparent)!important;border-radius:4px}
+#mreader .mushaf .w.mk-l{background:color-mix(in srgb,#ef4444 45%,transparent)!important;border-radius:4px}
+#mreader .mushaf .w.wsel{box-shadow:0 0 0 2px var(--rd-acc);border-radius:4px}
+#mreader .rd-pick{position:absolute;inset-inline:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:7;max-height:60%;overflow:auto;border-radius:20px;background:var(--rd-card);color:var(--rd-ink);box-shadow:0 10px 40px rgba(0,0,0,.45)}
+#mreader .rd-pick .mpick{margin:0;border:0;background:transparent;color:inherit}
+.rd-attr{text-align:center;margin-top:2px}
+@media (max-width:720px){main.wrap:has(#rd-host){padding-inline:8px}}
+#mreader .rd-top{grid-template-columns:44px 44px 1fr 44px 44px!important;column-gap:4px!important;padding:8px 10px!important}
+#mreader .rd-top .rd-ic{width:44px!important;height:44px!important}
+#mreader .rd-top .rd-tt{padding:0 12px!important;min-width:0;max-width:100%!important}
+#mreader .rd-top .rd-tt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px!important}
+#mreader .rd-pick .mpick{position:static!important;transform:none!important;width:auto!important;max-height:none!important;box-shadow:none!important;padding:14px}
+#mreader.rd-embed .rd-top .rd-tt{padding:0 10px!important}
+#mreader.rd-embed .rd-top .rd-tt b{font-size:13px!important}
+#mreader.rd-embed .rd-page{width:min(100%,calc((var(--rdH,100dvh) - 30px) * .64))!important}
+#mreader.rd-embed .rd-spread .rd-page{width:min(calc((var(--rdW,100vw) - 70px) / 2),calc((var(--rdH,100dvh) - 30px) * .64),660px)!important}
+#mreader.rd-full-off{}
 </style>
 </head>
 <body>
