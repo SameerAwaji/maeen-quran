@@ -1573,7 +1573,35 @@ body.rd-open #qbar{display:none!important}
 @media (min-width:1000px){#mreader .rd-page{padding:6px 0}#mreader .rd-stage{padding-top:72px}#mreader .rd-nav{height:110px}}
 @media (max-width:620px){#mreader .rd-sl{display:none}#mreader .rd-stage,#mreader.rd-playing .rd-stage{padding:56px 2px calc(140px + env(safe-area-inset-bottom,0px))}#mreader .rd-page,#mreader.rd-playing .rd-page{width:min(100%,calc((100dvh - 210px) * .72))}#mreader .rd-player{position:relative}#mreader.rd-playing .rd-player{position:absolute;bottom:calc(100% + 6px);inset-inline:8px;width:auto}}
 
+.khc{display:grid;gap:10px;margin-top:12px;padding:14px;border-radius:18px;border:1px solid var(--rd-line,var(--line));background:var(--rd-card,var(--surface));color:var(--rd-ink,var(--ink))}
+.khc h4{margin:0;font-size:1rem}
+.khc-f{display:grid;gap:6px}
+.khc-f>span{font-weight:700;font-size:.85rem}
+.khc-f small{font-weight:400;opacity:.65}
+.khc-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border-radius:999px;background:color-mix(in srgb,currentColor 7%,transparent)}
+.khc-seg button,.khc-wd button{border:0;background:transparent;color:inherit;font:inherit;font-size:.82rem;font-weight:700;padding:7px 6px;border-radius:999px;cursor:pointer}
+.khc-seg button.on{background:var(--rd-card2,var(--bg,#fff));box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.khc-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.khc-2 label{display:grid;gap:4px;font-size:.8rem;font-weight:700;min-width:0}
+.khc-2 [hidden]{display:none}
+.khc select,.khc input{width:100%;box-sizing:border-box;font:inherit;font-size:.9rem;padding:9px 10px;border-radius:12px;border:1px solid var(--rd-line,var(--line));background:var(--rd-bg,var(--bg,#fff));color:inherit;min-width:0}
+.khc-wd{display:flex;flex-wrap:wrap;gap:6px}
+.khc-wd button{border:1px solid var(--rd-line,var(--line));padding:6px 12px}
+.khc-wd button.on{background:#e5484d;border-color:#e5484d;color:#fff}
+.khc-sum{display:grid;gap:2px;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,#2fb36a 14%,transparent);font-size:.84rem}
+.khc-sum b{font-size:.9rem}
+.kh-days button.khc-t b{font-size:1.15rem}
 #mreader .rd-bot{grid-template-columns:minmax(0,1fr)}
+#mreader .rd-strip-row{position:relative}
+#mreader .rd-strip{cursor:grab;touch-action:pan-x}
+#mreader .rd-strip:active{cursor:grabbing}
+#mreader .rd-th.hov:not(.cur){outline:2px solid var(--rd-acc);outline-offset:1px;transform:scale(1.15)}
+#mreader .rd-th{transition:transform .12s}
+#mreader .rd-sbub{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);display:grid;justify-items:center;gap:0;padding:6px 16px;border-radius:14px;background:var(--rd-ink);color:var(--rd-bg);box-shadow:0 6px 20px rgba(0,0,0,.35);pointer-events:none;z-index:5;white-space:nowrap}
+#mreader .rd-sbub b{font-size:1.1rem}
+#mreader .rd-sbub small{font-size:.72rem;opacity:.8}
+#mreader .rd-sbub[hidden]{display:none}
+
 #mreader .rd-top{display:grid;grid-template-columns:44px 44px 1fr 44px 44px;align-items:center}
 #mreader .rd-top .rd-tt{grid-column:3;max-width:260px;padding:9px 16px}
 #mreader .rd-top .rd-tt b{font-size:.86rem}
