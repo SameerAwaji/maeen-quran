@@ -1444,6 +1444,15 @@ main .stat[data-ic]{padding-inline-end:calc(var(--ics,42px) + 24px)}
 .zh-city.zh-city2 svg{width:13px;height:13px}
 .zh-city.zh-city2 select{font-size:.78rem;font-weight:700;padding:2px 0;field-sizing:content;max-width:150px}
 .zh-date2>span{opacity:.85;white-space:nowrap}
+.zh-side{margin-inline-start:auto;display:grid;justify-items:end;gap:4px;text-align:end;align-self:flex-start;min-width:0}
+.zh-side b{color:#f5c547;font-size:.82rem;white-space:nowrap}
+.zh-side small{font-size:.74rem;opacity:.8;white-space:nowrap}
+.zh-side .zh-city2{justify-self:end;max-width:none!important;flex:none}
+.zh-side .zh-city2 select{max-width:none!important;min-width:0;width:auto;field-sizing:content;overflow:visible}
+.zad-hero .zh-time{white-space:nowrap}
+.zad-hero .zh-next>div:not(.zh-cd):not(.zh-side){flex:0 1 auto}
+.zad-hero .zh-next>.zh-cd{margin-inline-start:0}
+@media (min-width:601px){.zh-side{align-self:center}}
 .zh-date2{flex-wrap:nowrap}
 @media (max-width:380px){.zh-date2{flex-wrap:wrap}}
 .zad-hero .zh-next{margin-top:0}
