@@ -1975,6 +1975,22 @@ button,.btn,nav,.tab,.pill,.chip{-webkit-user-select:none;user-select:none;-webk
 #mreader .rd-pick .mp-steps{display:none}
 #mreader .rd-pick .mpick .hint,#mreader .rd-pick .mpick p{font-size:12px;margin:4px 0}
 #mreader .rd-pick .mpick button{min-height:36px}
+/* نافذة التسميع: صغيرة وتبتعد عن الكلمة المحددة */
+#mreader .rd-pick{max-height:34%!important}
+#mreader .rd-pick.top{bottom:auto!important;top:calc(8px + env(safe-area-inset-top,0px))}
+#mreader.rd-embed .rd-pick.top{top:8px}
+#mreader .rd-pick .mpick .hint,#mreader .rd-pick .mpick>p{display:none}
+/* رقم الصفحة في الجهة الخارجية: الوجه الأيمن يمين، والوجه الأيسر يسار */
+#mreader .rd-page.rd-pr .rd-pf{justify-content:flex-start!important}
+#mreader .rd-page.rd-pl .rd-pf{justify-content:flex-end!important}
+/* لون الهوية بدل الأخضر داخل المصحف (يتبع لون كل برنامج) */
+#mreader{--rd-acc:var(--teal,#1fa6c6)!important}
+/* تحديد الآية: شريط واحد متصل لكل سطر بدل مربعات الكلمات */
+#mreader .rd-page{position:relative}
+#mreader .mushaf .w.rd-cur.rd-cur{background:transparent!important;box-shadow:none!important}
+#mreader .rd-ayhl{position:absolute;pointer-events:none;border-radius:8px;background:rgba(255,255,255,.17);z-index:0}
+:root[data-theme="light"] #mreader .rd-ayhl{background:rgba(0,0,0,.08)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #mreader .rd-ayhl{background:rgba(0,0,0,.08)}}
 </style>
 </head>
 <body>
