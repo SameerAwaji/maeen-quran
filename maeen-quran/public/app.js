@@ -1,3 +1,5 @@
+/* ============ عزل بيانات المتصفح لكل برنامج (عند تشغيل أكثر من برنامج على نفس النطاق) ============ */
+(function(){try{const t=(window.APP_CONFIG||{}).tenant;if(!t)return;const P="p:"+t+":",S=Storage.prototype,g=S.getItem,s=S.setItem,r=S.removeItem;S.getItem=function(k){return g.call(this,P+k)};S.setItem=function(k,v){return s.call(this,P+k,v)};S.removeItem=function(k){return r.call(this,P+k)}}catch(e){}})();
 
 /* ============ ثوابت ============ */
 const SURAHS="الفاتحة:7|البقرة:286|آل عمران:200|النساء:176|المائدة:120|الأنعام:165|الأعراف:206|الأنفال:75|التوبة:129|يونس:109|هود:123|يوسف:111|الرعد:43|إبراهيم:52|الحجر:99|النحل:128|الإسراء:111|الكهف:110|مريم:98|طه:135|الأنبياء:112|الحج:78|المؤمنون:118|النور:64|الفرقان:77|الشعراء:227|النمل:93|القصص:88|العنكبوت:69|الروم:60|لقمان:34|السجدة:30|الأحزاب:73|سبأ:54|فاطر:45|يس:83|الصافات:182|ص:88|الزمر:75|غافر:85|فصلت:54|الشورى:53|الزخرف:89|الدخان:59|الجاثية:37|الأحقاف:35|محمد:38|الفتح:29|الحجرات:18|ق:45|الذاريات:60|الطور:49|النجم:62|القمر:55|الرحمن:78|الواقعة:96|الحديد:29|المجادلة:22|الحشر:24|الممتحنة:13|الصف:14|الجمعة:11|المنافقون:11|التغابن:18|الطلاق:12|التحريم:12|الملك:30|القلم:52|الحاقة:52|المعارج:44|نوح:28|الجن:28|المزمل:20|المدثر:56|القيامة:40|الإنسان:31|المرسلات:50|النبأ:40|النازعات:46|عبس:42|التكوير:29|الانفطار:19|المطففين:36|الانشقاق:25|البروج:22|الطارق:17|الأعلى:19|الغاشية:26|الفجر:30|البلد:20|الشمس:15|الليل:21|الضحى:11|الشرح:8|التين:8|العلق:19|القدر:5|البينة:8|الزلزلة:8|العاديات:11|القارعة:11|التكاثر:8|العصر:3|الهمزة:9|الفيل:5|قريش:4|الماعون:7|الكوثر:3|الكافرون:6|النصر:3|المسد:5|الإخلاص:4|الفلق:5|الناس:6".split("|").map(s=>{const[n,a]=s.split(":");return{n,a:+a}});
@@ -736,25 +738,46 @@ async function licPing(){const L=CFG.license;if(!L||!L.server||!L.key||!L.anonKe
 function licLockView(){const exp=LIC.status!=="suspended";return `<main class="wrap"><div class="center-page"><img class="welcome-logo" src="${logoFull()}" alt=""><h1>${exp?"انتهى اشتراك المنصة":"الاشتراك موقوف مؤقتاً"}</h1><p class="muted">${esc(LIC.message||"بياناتكم محفوظة كما هي. يرجى التواصل مع مقدّم الخدمة لإعادة التفعيل.")}</p>${MODE==="live"?`<div class="row" style="justify-content:center"><button class="btn" data-act="logout">تسجيل الخروج</button></div>`:""}</div></main>`}
 function licBanner(m){if(!LIC||!LIC.expires||!m||m.role!=="director")return"";const days=Math.round((new Date(LIC.expires)-new Date(today()))/864e5);return days>=0&&days<=10?`<div class="card" style="border-color:var(--warn)"><b>ينتهي اشتراك المنصة بعد ${days} ${days<=10&&days>2?"أيام":"يوم"}</b> <span class="small muted">(${fmtShort(LIC.expires)})، تواصل مع مقدّم الخدمة للتجديد.</span></div>`:""}
 /* ============ لوحة المالك ============ */
+const PROG_BASE=()=>location.origin+location.pathname.replace(/[^/]*$/,"");
+const SCHEMA_URL="https://github.com/turkialmajedi/maeen-quran/blob/main/maeen-quran/supabase/schema.sql";
+function progConfigText(d){const slug=d.slug||"program";return `// إعدادات برنامج «${d.name||slug}» — يُرفع هذا الملف إلى: maeen-quran/programs/${slug}/config.js
+// المفتاح هنا هو المفتاح العام (publishable / anon) فقط. لا تضع أبداً مفتاح service_role.
+window.APP_CONFIG = {
+  tenant: "${slug}",
+  supabaseUrl: "${d.sbUrl||"https://xxxxxxxx.supabase.co"}",
+  supabaseAnonKey: "${d.sbKey||"sb_publishable_..."}",
+  usernameDomain: "${slug}.s.maeen.com.sa",
+  license: {
+    server: "${CFG.supabaseUrl}",
+    anonKey: "${CFG.supabaseAnonKey}",
+    key: "${d.key}"
+  },
+};
+`}
+function progManifestText(d){return JSON.stringify({name:d.name||"منصة حلقات القرآن",short_name:(d.short||d.name||"الحلقات").slice(0,24),lang:"ar",dir:"rtl",start_url:"./",display:"standalone",background_color:"#f3f5f6",theme_color:d.color||"#284a70",icons:[{src:"icon-192.png",sizes:"192x192",type:"image/png"},{src:"icon-512.png",sizes:"512x512",type:"image/png",purpose:"any maskable"}]},null,2)}
+function progDownload(name,text,type){try{const b=new Blob([text],{type:type||"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){toast("تعذّر التنزيل","err")}}
+
 const TN={list:null,loading:false};
 async function tnLoad(){if(!SB)return;TN.loading=true;const{data,error}=await SB.from("tenants").select("id,data,updated_at").order("updated_at",{ascending:false});TN.loading=false;TN.list=error?[]:(data||[]);if(error)toast(errMsg(error,"تعذّر تحميل الجهات"),"err");render()}
 function tenantsView(m){if(m.role!=="director"||!cfg().ownerMode)return empty("لوحة المالك غير مفعّلة. فعّلها من «الإدارة».");if(MODE!=="live")return empty("لوحة المالك تعمل في النسخة المنشورة فقط.");if(TN.list===null&&!TN.loading)tnLoad();
   const L=TN.list||[];const t0=today();const st=t=>t.data.status==="suspended"?["موقوف","p-bad"]:t.data.expires&&t.data.expires<t0?["منتهٍ","p-warn"]:["فعّال","p-ok"];
   const act=L.filter(t=>st(t)[0]==="فعّال");const sum=k=>L.reduce((a,t)=>a+n0((t.data.stats||{})[k]),0);
-  return `<div class="hero"><div><h1>لوحة المالك</h1><div class="date">الجهات المشتركة في المنصة</div></div><button class="btn pri" data-act="tnNew">إضافة جهة</button></div>
-  <div class="stats"><div class="stat"><b>${L.length}</b><span>جهة</span></div><div class="stat"><b>${act.length}</b><span>اشتراك فعّال</span></div><div class="stat"><b>${sum("students")}</b><span>طالب في كل الجهات</span></div><div class="stat"><b>${sum("staff")}</b><span>معلم ومشرف</span></div></div>
+  return `<div class="hero"><div><h1>مسؤول المنصة</h1><div class="date">البرامج المشغّلة على المنصة — لكل برنامج هويته وقاعدة بياناته المستقلة</div></div><button class="btn pri" data-act="tnNew">إضافة برنامج</button></div>
+  <div class="stats"><div class="stat"><b>${L.length}</b><span>برنامج</span></div><div class="stat"><b>${act.length}</b><span>اشتراك فعّال</span></div><div class="stat"><b>${sum("students")}</b><span>طالب في كل البرامج</span></div><div class="stat"><b>${sum("staff")}</b><span>معلم ومشرف</span></div></div>
   ${TN.loading&&!L.length?empty("جاري التحميل…"):L.length?`<div class="grid g2">${L.map(t=>{const d=t.data;const s0=st(t);const S0=d.stats||{};const left=d.expires?Math.round((new Date(d.expires)-new Date(t0))/864e5):null;
     return `<div class="card tncard"><div class="card-h"><h2>${esc(d.name)}</h2><span class="pill ${s0[1]}">${s0[0]}</span></div>
     <div class="small muted">${d.url?`<a href="${esc(d.url)}" target="_blank" rel="noopener" dir="ltr">${esc(d.url.replace(/^https?:\/\//,""))}</a>`:"لا رابط"}${d.plan?" · "+esc(d.plan):""}${d.contact?" · "+esc(d.contact):""}</div>
     <div class="tn-n"><span><b class="num">${n0(S0.students)}</b> طالب</span><span><b class="num">${n0(S0.staff)}</b> معلم ومشرف</span><span><b class="num">${n0(S0.circles)}</b> حلقة</span></div>
     <div class="small muted">${d.expires?`ينتهي ${fmtShort(d.expires)}${left!=null&&left>=0?` (بعد ${left} يوماً)`:""}`:"بدون تاريخ انتهاء"} · ${d.lastPing?"آخر اتصال "+nWhen(d.lastPing):"لم تتصل بعد"}</div>
     ${d.notes?`<p class="small" style="margin-top:6px">${esc(d.notes)}</p>`:""}
-    <div class="row" style="margin-top:10px"><button class="btn sm" data-act="tnEdit" data-id="${t.id}">تعديل</button><button class="btn sm" data-act="tnLink" data-id="${t.id}">إعدادات الربط</button><button class="btn sm ${d.status==="suspended"?"pri":"ghost danger"}" data-act="tnToggle" data-id="${t.id}">${d.status==="suspended"?"تفعيل":"إيقاف"}</button></div></div>`}).join("")}</div>`:empty("لا جهات بعد. أضف أول جهة، ثم ضع «إعدادات الربط» في ملف config.js لنسختها.")}
-  <p class="hint">تتصل نسخة كل جهة بلوحتك لتعرف حالة اشتراكها، وترسل أعداد المستخدمين فقط، ولا تصل إليك أي بيانات للطلاب.</p>`}
-function tenantForm(t){const d=(t&&t.data)||{};const body=`<div class="fg">${fld("اسم الجهة",inp("name",d.name,"text","required placeholder='مثال: جمعية تحفيظ ...'"))}${fld("رابط منصتها",inp("url",d.url,"url","placeholder='https://...'"))}</div>
+    <div class="row" style="margin-top:10px"><button class="btn sm" data-act="tnEdit" data-id="${t.id}">تعديل</button><button class="btn sm" data-act="tnLink" data-id="${t.id}">خطوات التشغيل</button><button class="btn sm ${d.status==="suspended"?"pri":"ghost danger"}" data-act="tnToggle" data-id="${t.id}">${d.status==="suspended"?"تفعيل":"إيقاف"}</button></div></div>`}).join("")}</div>`:empty("لا برامج بعد. أضف أول برنامج، ثم اتبع «خطوات التشغيل».")}
+  <p class="hint">يتصل كل برنامج بلوحتك لتعرف حالة اشتراكها، وترسل أعداد المستخدمين فقط، ولا تصل إليك أي بيانات للطلاب.</p>`}
+function tenantForm(t){const d=(t&&t.data)||{};const body=`<div class="fg">${fld("اسم البرنامج",inp("name",d.name,"text","required placeholder='مثال: برنامج مكنون'"))}${fld("رابط المنصة (يُملأ تلقائياً)",inp("url",d.url,"url","placeholder='https://...'"))}</div>
   <div class="fg">${fld("التواصل",inp("contact",d.contact,"text","placeholder='اسم المسؤول ورقمه'"))}${fld("الباقة",inp("plan",d.plan,"text","placeholder='مثال: سنوية — 200 طالب'"))}${fld("ينتهي الاشتراك في",inp("expires",d.expires,"date"),"اتركه فارغاً لاشتراك مفتوح")}</div>
-  ${fld("رسالة تظهر لهم عند الإيقاف أو الانتهاء (اختياري)",inp("message",d.message,"text"))}${fld("ملاحظات خاصة بك",`<textarea name="notes" id="f-notes">${esc(d.notes||"")}</textarea>`)}`;
-  openModal(t?"تعديل الجهة":"جهة جديدة",body,"tenant",{id:t&&t.id},"حفظ")}
+  ${fld("رسالة تظهر لهم عند الإيقاف أو الانتهاء (اختياري)",inp("message",d.message,"text"))}${fld("ملاحظات خاصة بك",`<textarea name="notes" id="f-notes">${esc(d.notes||"")}</textarea>`)}<details class="card" style="margin-top:8px" ${d.slug?"":"open"}><summary><b>الإعدادات التقنية للبرنامج</b> <span class="small muted">(قاعدة البيانات والرابط)</span></summary>
+  <div class="fg" style="margin-top:8px">${fld("المعرّف بالإنجليزي",inp("slug",d.slug,"text","pattern='[a-z0-9-]{2,30}' dir='ltr' placeholder='makanoon'"),"حروف إنجليزية صغيرة وأرقام فقط — يصير جزءاً من الرابط")}${fld("اللون الأساسي",inp("color",d.color||"#284a70","color"))}</div>
+  <div class="fg">${fld("رابط Supabase للبرنامج (Project URL)",inp("sbUrl",d.sbUrl,"url","dir='ltr' placeholder='https://xxxx.supabase.co'"))}${fld("المفتاح العام (anon / publishable)",inp("sbKey",d.sbKey,"text","dir='ltr' placeholder='sb_publishable_...'"),"المفتاح العام فقط — لا تضع مفتاح service_role")}</div></details>`;
+  openModal(t?"تعديل البرنامج":"برنامج جديد",body,"tenant",{id:t&&t.id},"حفظ")}
 function circleForm(c){
   const m=me();c=c||{track:"hifz",days:[],time:"",duration:60,teacherId:m.id};const timed=(c.days||[]).length>0||!!c.time;
   const cur=c.id?circleStudents(c.id).map(s=>s.id):[];
@@ -1359,8 +1382,9 @@ const FORMS={
     toast("أُعيدت جدولة الخطة")},
   noop:()=>{},
   tenant:async fd=>{const id=modalCtx.id||"tn"+gen();const cur=(TN.list.find(t=>t.id===id)||{data:{key:(crypto.randomUUID?crypto.randomUUID():gen()+gen()+gen()).replace(/-/g,""),status:"active",created:today()}}).data;
-    const d={...cur,name:(fd.get("name")||"").trim(),url:(fd.get("url")||"").trim(),contact:(fd.get("contact")||"").trim(),plan:(fd.get("plan")||"").trim(),expires:fd.get("expires")||"",message:(fd.get("message")||"").trim(),notes:(fd.get("notes")||"").trim()};
-    if(!d.name){toast("اكتب اسم الجهة","err");throw new Error("اختر")}const{error}=await SB.from("tenants").upsert({id,data:d});if(error){toast(errMsg(error,"تعذّر الحفظ"),"err");throw new Error("اختر")}toast("حُفظت الجهة");tnLoad()},
+    const slug=String(fd.get("slug")||"").trim().toLowerCase();const sbKey=String(fd.get("sbKey")||"").trim();if(/service_role|sb_secret_/i.test(sbKey)){toast("هذا مفتاح سري! ضع المفتاح العام (anon / publishable) فقط","err");throw new Error("اختر")}if(slug&&!/^[a-z0-9-]{2,30}$/.test(slug)){toast("المعرّف: حروف إنجليزية صغيرة وأرقام فقط","err");throw new Error("اختر")}if(slug&&(TN.list||[]).some(t=>t.id!==id&&t.data.slug===slug)){toast("المعرّف مستخدم لبرنامج آخر","err");throw new Error("اختر")}
+    const d={...cur,slug,sbUrl:String(fd.get("sbUrl")||"").trim().replace(/\/$/,""),sbKey,color:fd.get("color")||"",name:(fd.get("name")||"").trim(),url:(fd.get("url")||"").trim()||(slug?PROG_BASE()+slug+"/":""),contact:(fd.get("contact")||"").trim(),plan:(fd.get("plan")||"").trim(),expires:fd.get("expires")||"",message:(fd.get("message")||"").trim(),notes:(fd.get("notes")||"").trim()};
+    if(!d.name){toast("اكتب اسم البرنامج","err");throw new Error("اختر")}const{error}=await SB.from("tenants").upsert({id,data:d});if(error){toast(errMsg(error,"تعذّر الحفظ"),"err");throw new Error("اختر")}toast("حُفظ البرنامج");tnLoad()},
   tnStatus:async()=>{const t=TN.list.find(x=>x.id===modalCtx.id);if(!t)return;const{error}=await SB.from("tenants").update({data:{...t.data,status:modalCtx.st}}).eq("id",t.id);if(error)toast(errMsg(error,"تعذّر الحفظ"),"err");else toast(modalCtx.st==="suspended"?"أُوقف الاشتراك":"فُعّل الاشتراك");tnLoad()},
   clrMarks:()=>{ui.marks={};ui.mpick=null;ui.mlast=null;toast("حُذفت كل العلامات");render()},
   plan:fd=>{const s=get("members",modalCtx.sid);const f=document.querySelector('form[data-form="plan"]');const np=planFromForm(f);const op=s.plan||{};
@@ -3308,8 +3332,17 @@ Object.assign(A,{
   tnNew:()=>tenantForm(),
   tnEdit:el=>tenantForm(TN.list.find(t=>t.id===el.dataset.id)),
   tnToggle:el=>{const t=TN.list.find(x=>x.id===el.dataset.id);if(!t)return;const st=t.data.status==="suspended"?"active":"suspended";openModal(st==="suspended"?"إيقاف اشتراك":"تفعيل اشتراك",`<p>${st==="suspended"?"ستُقفل منصة":"ستُفتح منصة"} «${esc(t.data.name)}» لكل مستخدميها${st==="suspended"?" ويظهر لهم أن الاشتراك موقوف":""}.</p><p class="hint">يُطبَّق خلال دقائق عند فتحهم المنصة.</p>`,"tnStatus",{id:t.id,st},st==="suspended"?"تأكيد الإيقاف":"تأكيد التفعيل")},
-  tnLink:el=>{const t=TN.list.find(x=>x.id===el.dataset.id);if(!t)return;const snip=`  license: {\n    server: "${CFG.supabaseUrl}",\n    anonKey: "${CFG.supabaseAnonKey}",\n    key: "${t.data.key}"\n  },`;
-    openModal("ربط نسخة الجهة",`<p class="small">أضف هذه الأسطر داخل <b>window.APP_CONFIG</b> في ملف <b>config.js</b> لنسخة «${esc(t.data.name)}»:</p><pre class="codebox" dir="ltr">${esc(snip)}</pre><button type="button" class="btn sm" data-act="tnCopy" data-v="${esc(snip)}">نسخ</button><p class="hint">المفتاح العام هنا هو مفتاح موقعك المنشور أصلاً، ومفتاح الجهة لا يتيح إلا معرفة حالة اشتراكها وإرسال أعداد مستخدميها.</p>`,"noop",{},"إغلاق")},
+  tnLink:el=>{const t=TN.list.find(x=>x.id===el.dataset.id);if(!t)return;const d=t.data;const cfgT=progConfigText(d);const ok=d.slug&&d.sbUrl&&d.sbKey;
+    openModal("تشغيل برنامج «"+d.name+"»",`<ol class="prog-steps">
+      <li><b>قاعدة بيانات مستقلة:</b> من حسابك في <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">Supabase</a> أنشئ مشروعاً جديداً باسم البرنامج، ثم من <b>SQL Editor</b> شغّل <a href="${SCHEMA_URL}" target="_blank" rel="noopener">ملف قاعدة البيانات (schema.sql)</a> كاملاً.</li>
+      <li><b>اربطه هنا:</b> من <b>Project Settings ← API</b> انسخ الرابط والمفتاح العام، وضعهما في «تعديل ← الإعدادات التقنية». ${ok?`<span class="pill p-ok">تم ✓</span>`:`<span class="pill p-warn">ناقص</span>`}</li>
+      <li><b>ملف الإعداد:</b> نزّل الملف وارفعه في المستودع داخل المجلد <code dir="ltr">maeen-quran/programs/${esc(d.slug||"slug")}/</code> — ومعه شعار البرنامج باسم <code dir="ltr">icon-192.png</code> و<code dir="ltr">icon-512.png</code> إن رغبت.</li>
+      <li><b>الدخول الأول:</b> افتح <a href="${esc(d.url||"#")}" target="_blank" rel="noopener" dir="ltr">${esc(d.url||"رابط البرنامج")}</a> بعد دقيقتين، وأول من يسجّل يصير مدير البرنامج، ثم يخصّص الاسم والشعار والألوان من «الإدارة».</li>
+      <li><b>(اختياري)</b> لإنشاء حسابات الطلاب بدون إيميل: انشر دالة <code dir="ltr">create-account</code> في مشروع البرنامج.</li></ol>
+      <pre class="codebox" dir="ltr">${esc(cfgT)}</pre>
+      <div class="row"><button type="button" class="btn sm pri" data-act="tnDl" data-id="${t.id}" data-f="config">تنزيل config.js</button><button type="button" class="btn sm" data-act="tnDl" data-id="${t.id}" data-f="manifest">تنزيل manifest.webmanifest</button><button type="button" class="btn sm" data-act="tnCopy" data-v="${esc(cfgT)}">نسخ</button></div>
+      <p class="hint">كل برنامج له قاعدة بيانات منفصلة تماماً، ولا يصل لوحتك منه إلا حالة اشتراكه وأعداد مستخدميه.</p>`,"noop",{},"إغلاق")},
+  tnDl:el=>{const t=TN.list.find(x=>x.id===el.dataset.id);if(!t)return;if(el.dataset.f==="manifest")progDownload("manifest.webmanifest",progManifestText(t.data),"application/manifest+json");else progDownload("config.js",progConfigText(t.data),"text/javascript")},
   tnCopy:el=>{try{navigator.clipboard.writeText(el.dataset.v);toast("نُسخ")}catch(e){}},
   nAll:()=>{ui.npanel=false;go("notifs")},
   nFilter:el=>{ui.nf=el.dataset.v;render()},
