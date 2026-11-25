@@ -13,10 +13,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Publish maeen-quran/public to gh-pages branch
+      - name: Build main platform + every program in maeen-quran/programs
+        run: |
+          set -e
+          rm -rf _site && mkdir -p _site
+          cp -r maeen-quran/public/. _site/
+          if [ -d maeen-quran/programs ]; then
+            for d in maeen-quran/programs/*/; do
+              [ -d "$d" ] || continue
+              slug=$(basename "$d")
+              case "$slug" in *[!a-z0-9-]*) echo "skip $slug"; continue;; esac
+              [ -f "$d/config.js" ] || { echo "skip $slug (no config.js)"; continue; }
+              mkdir -p "_site/$slug"
+              cp -r maeen-quran/public/. "_site/$slug/"
+              cp -r "$d". "_site/$slug/"
+              rm -f "_site/$slug/README.md"
+              echo "built program: $slug"
+            done
+          fi
+      - name: Publish to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: maeen-quran/public
+          publish_dir: _site
           publish_branch: gh-pages
           force_orphan: true
