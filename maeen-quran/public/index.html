@@ -1958,6 +1958,12 @@ button,.btn,nav,.tab,.pill,.chip{-webkit-user-select:none;user-select:none;-webk
 #mreader.rd-embed .rd-page{width:min(100%,calc((var(--rdH,100dvh) - 30px) * .64))!important}
 #mreader.rd-embed .rd-spread .rd-page{width:min(calc((var(--rdW,100vw) - 70px) / 2),calc((var(--rdH,100dvh) - 30px) * .64),660px)!important}
 #mreader.rd-full-off{}
+/* زر التشغيل يسار والقارئ يمين · البحث يمين والرجوع يسار */
+#mreader .rp-pill{display:flex!important;flex-direction:row-reverse!important;justify-content:space-between!important;align-items:center;padding:0 16px!important}
+#mreader .rp-pill .rp-name{flex:1;text-align:right!important;justify-content:flex-start!important}
+#mreader .rd-strip-row .rd-sbtn{order:1}
+#mreader .rd-strip-row .rd-strip{order:2}
+#mreader .rd-strip-row .rd-bk{order:3}
 </style>
 </head>
 <body>

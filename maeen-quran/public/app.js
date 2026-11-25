@@ -2737,13 +2737,15 @@ function rGhost(n,dir){const o=document.getElementById("mreader");const st=o&&o.
   const sr=st.getBoundingClientRect(),r=cp.getBoundingClientRect();Object.assign(gh.style,{position:"absolute",top:(r.top-sr.top)+"px",left:(r.left-sr.left)+"px",width:r.width+"px",height:r.height+"px",pointerEvents:"none"});st.appendChild(gh);
   const m=gh.querySelector(".mushaf"),cm=cp.querySelector(".mushaf");try{if(m.dataset.kind==="mqcf")fitQcf(m);else if(m.dataset.kind==="m15")fitMushaf(m)}catch(e){}if(cm&&m&&cm.dataset.kind===m.dataset.kind&&!m.classList.contains("q-open")&&!cm.classList.contains("q-open")){m.style.fontSize=cm.style.fontSize;m.style.setProperty("height",cm.style.height,"important")}
   const H=rHL();gh.querySelectorAll("[data-rk]").forEach(w=>{const g=+w.dataset.rk.split(":")[0];if(H[g])w.style.background=`color-mix(in srgb,${H[g]} 38%,transparent)`});return gh}
-function rDragTo(dx,anim){const o=document.getElementById("mreader");const st=o&&o.querySelector(".rd-stage");const cp=st&&st.querySelector(":scope>.rd-page");if(!cp)return;const W=st.clientWidth;
-  const n=RD.pg+(dx>0?1:-1);const ok=n>=1&&n<=604;const d=ok?dx:dx*.25;const gh=ok&&dx!==0?rGhost(n):null;const old=st.querySelector(".rd-ghost");if(old&&old!==gh)old.remove();
-  const tr=anim?"transform .28s cubic-bezier(.2,.75,.25,1)":"none";cp.style.transition=tr;cp.style.transform=`translate3d(${d}px,0,0)`;if(gh){gh.style.transition=tr;gh.style.transform=`translate3d(${d+(dx>0?-W:W)}px,0,0)`}}
-function rDragEnd(dx,v){const o=document.getElementById("mreader");const st=o&&o.querySelector(".rd-stage");if(!st)return;const W=st.clientWidth;const n=RD.pg+(dx>0?1:-1);
-  if(dx&&n>=1&&n<=604&&(Math.abs(dx)>W*.18||(v>.45&&Math.abs(dx)>30))){rDragTo(dx>0?W:-W,true);clearTimeout(RD._slT);RD._slT=setTimeout(()=>{RD._noFade=true;RD.g=null;if(Math.abs(n-RD.pg)>2)RD.prev=RD.pg;RD.pg=n;zls.set("rlast",n);RD.sheet=null;rRender()},280)}
-  else{rDragTo(0,true);setTimeout(()=>{const g=st.querySelector(".rd-ghost");if(g&&!RD._drag)g.remove()},300)}}
-function rSlide(d){const o=document.getElementById("mreader");const st=o&&o.querySelector(".rd-stage");const n=RD.pg+d;if(!st||rSpread()||n<1||n>604||!(QCF_OFF||(QCFP[n]&&QCFP[n].lines)))return false;rDragTo(d>0?1:-1);requestAnimationFrame(()=>requestAnimationFrame(()=>rDragEnd(d>0?st.clientWidth:-st.clientWidth,1)));return true}
+/* السحب من اليمين لليسار = الصفحة التالية، والعكس = السابقة */
+function rDragTarget(dx){if(rSpread()){const a0=RD.pg%2?RD.pg:RD.pg-1;const n=a0+(dx<0?2:-2);return n>=1&&n<=604?n:(dx<0&&a0+1<604?null:null)}const n=RD.pg+(dx<0?1:-1);return n>=1&&n<=604?n:null}
+function rDragTo(dx,anim){RD._lastDx=dx;const o=document.getElementById("mreader");const st=o&&o.querySelector(".rd-stage");if(!st)return;const sp=rSpread();const cp=st.querySelector(sp?":scope>.rd-spread":":scope>.rd-page");if(!cp)return;const W=st.clientWidth;
+  const n=rDragTarget(dx);const ok=n!=null;const d=ok?dx:dx*.25;const gh=ok&&!sp&&dx!==0?rGhost(n):null;const old=st.querySelector(".rd-ghost");if(old&&old!==gh)old.remove();
+  const tr=anim?"transform .26s cubic-bezier(.2,.75,.25,1),opacity .26s":"none";cp.style.transition=tr;cp.style.transform=`translate3d(${d}px,0,0)`;if(sp)cp.style.opacity=anim&&Math.abs(d)>=W?"0":"";if(gh){gh.style.transition=tr;gh.style.transform=`translate3d(${d+(dx<0?W:-W)}px,0,0)`}}
+function rDragEnd(dx,v){const o=document.getElementById("mreader");const st=o&&o.querySelector(".rd-stage");if(!st)return;const W=st.clientWidth;const n=rDragTarget(dx);
+  if(dx&&n!=null&&(Math.abs(dx)>40||v>.3)){const sp=rSpread();rDragTo(dx<0?-W:W,true);clearTimeout(RD._slT);RD._slT=setTimeout(()=>{RD._noFade=!sp;RD.g=null;if(Math.abs(n-RD.pg)>2)RD.prev=RD.pg;RD.pg=n;zls.set("rlast",n);RD.sheet=null;rRender()},270)}
+  else{rDragTo(0,true);setTimeout(()=>{const g=st.querySelector(".rd-ghost");if(g&&!RD._drag)g.remove();const cp=st.querySelector(":scope>.rd-spread");if(cp&&!RD._drag){cp.style.transform="";cp.style.opacity=""}},300)}}
+function rSlide(d){const o=document.getElementById("mreader");const st=o&&o.querySelector(".rd-stage");const n=RD.pg+d;if(!st||rSpread()||n<1||n>604||!(QCF_OFF||(QCFP[n]&&QCFP[n].lines)))return false;rDragTo(d>0?-1:1);requestAnimationFrame(()=>requestAnimationFrame(()=>rDragEnd(d>0?-st.clientWidth:st.clientWidth,1)));return true}
 function rNav(d){if(!rSpread()&&!RD.sheet&&rSlide(d)){RD.g=null;return}let n;if(rSpread()){const a0=RD.pg%2?RD.pg:RD.pg-1;n=a0+2*d}else n=RD.pg+d;n=Math.min(604,Math.max(1,n));if(n===RD.pg)return;RD.g=null;rGo(n)}
 /* ===== بحث المصحف (آية / سورة / صفحة / جزء) ===== */
 function mSearchRes(q0){if(!Q)return"";const q=rDig((q0||"").trim());if(!q)return "";
@@ -2774,11 +2776,13 @@ function rStripScrub(st){const r=st.getBoundingClientRect();const cx=r.left+r.wi
 function rBind(o){let sx=0,sy=0,moved=false,t0=0;
   o.addEventListener("pointerdown",e=>{if(!e.target.closest(".rd-stage"))return;sx=e.clientX;sy=e.clientY;moved=false;t0=Date.now();RD._lpDone=false;clearTimeout(RD._lpT);const w0=e.target.closest("[data-rk]");
     if(w0&&!RD.sheet){const gg=+w0.dataset.rk.split(":")[0];RD._lpT=setTimeout(()=>{if(moved)return;RD._lpDone=true;try{navigator.vibrate&&navigator.vibrate(15)}catch(_){}o.querySelectorAll(".rd-cur").forEach(x=>x.classList.remove("rd-cur"));o.querySelectorAll(`[data-rk^="${gg}:"]`).forEach(x=>x.classList.add("rd-cur"));RD.g=gg;setTimeout(()=>{if(RD.g!==gg)return;RD.sheet="ayah";rRender()},220)},450)}});
-  o.addEventListener("pointermove",e=>{if(sx&&(Math.abs(e.clientX-sx)>10||Math.abs(e.clientY-sy)>10)){moved=true;clearTimeout(RD._lpT)}if(sx&&!RD.sheet&&!rSpread()){const dx=e.clientX-sx,dy=e.clientY-sy;if(RD._drag||(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)*1.2)){RD._drag=true;rDragTo(dx)}}});
+  o.addEventListener("pointermove",e=>{if(sx&&(Math.abs(e.clientX-sx)>10||Math.abs(e.clientY-sy)>10)){moved=true;clearTimeout(RD._lpT)}if(sx&&!RD.sheet&&!RD._lpDone){const dx=e.clientX-sx,dy=e.clientY-sy;if(RD._drag||(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)*1.2)){if(!RD._drag){RD._drag=true;try{o.setPointerCapture(e.pointerId)}catch(_){}}rDragTo(dx)}}});
+  o.addEventListener("dragstart",e=>{if(e.target.closest(".rd-stage"))e.preventDefault()});
+  o.addEventListener("lostpointercapture",()=>{if(RD._drag){RD._drag=false;const dx=RD._lastDx||0;sx=0;rDragEnd(dx,Math.abs(dx)>40?1:0)}});
   o.addEventListener("contextmenu",e=>{if(e.target.closest(".rd-stage"))e.preventDefault()});
-  o.addEventListener("pointercancel",()=>{if(RD._drag){RD._drag=false;rDragEnd(0,0)}sx=0});
+  o.addEventListener("pointercancel",()=>{if(RD._drag){RD._drag=false;rDragEnd(RD._lastDx||0,0)}sx=0});
   o.addEventListener("pointerup",e=>{clearTimeout(RD._lpT);if(RD._lpDone){RD._lpDone=false;sx=0;return}if(!sx)return;const dx=e.clientX-sx,dy=e.clientY-sy;sx=0;if(RD._drag){RD._drag=false;const v=Math.abs(dx)/Math.max(1,Date.now()-t0);rDragEnd(dx,v);return}if(!e.target.closest(".rd-stage")||e.target.closest(".rd-nav"))return;
-    if(Math.abs(dx)>50&&Math.abs(dy)<80){rNav(dx>0?1:-1);return}
+    if(Math.abs(dx)>50&&Math.abs(dy)<80){rNav(dx<0?1:-1);return}
     if(moved||Date.now()-t0>600)return;
     if(!RD.sheet&&rTasmee()){const w=e.target.closest("[data-rk]");if(w){const k=w.dataset.rk;const x=ui.marks[k];if(!x){ui.marks[k]={t:"t",c:null,h:null};ui.mpick=k}else if(MT(x.t)==="t"){x.t="l";ui.mpick=k}else{delete ui.marks[k];if(ui.mpick===k)ui.mpick=null}ui.mlast=ui.marks[k]?k:null;if(RD.embedOn&&!RD.full)render();else rRender(true);return}}
     {const W=innerWidth,x=e.clientX,ez=Math.min(90,Math.max(44,W*.13));if(!RD.sheet&&x<ez){rNav(1);return}if(!RD.sheet&&x>W-ez){rNav(-1);return}}
