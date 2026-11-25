@@ -1,5 +1,6 @@
 /* عامل الخدمة: يعمل الموقع بدون إنترنت، ويستقبل الإشعارات والمنصة مقفلة */
-const V = "maeen-v6";
+const V = "maeen-v7";
+const FC = "maeen-mushaf-1"; // خطوط وصفحات المصحف والتفاسير: تبقى محفوظة حتى مع تحديث المنصة
 const SHELL = ["./", "index.html", "app.js", "config.js", "vendor/supabase.js", "manifest.webmanifest", "icon-192.png"];
 const NET_FIRST = /\/(index\.html|app\.js|config\.js)?$/;
 
@@ -7,7 +8,7 @@ self.addEventListener("install", e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).catch(() => {}).then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V && k !== FC).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener("fetch", e => {
@@ -28,7 +29,7 @@ self.addEventListener("fetch", e => {
   }
   // الملفات الثابتة (المصحف والخطوط والمكتبات): من المحفوظ أولاً
   e.respondWith(caches.match(r).then(hit => hit || fetch(r).then(res => {
-    if (res.ok || res.type === "opaque") { const cp = res.clone(); caches.open(V).then(c => c.put(r, cp)); }
+    if (res.ok || res.type === "opaque") { const cp = res.clone(); caches.open(cdn ? FC : V).then(c => c.put(r, cp)); }
     return res;
   })));
 });
