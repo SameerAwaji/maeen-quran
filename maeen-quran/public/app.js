@@ -3583,7 +3583,7 @@ function fitQcf(el0){const el=el0&&el0.nodeType?el0:document.querySelector(".mus
   const cs=getComputedStyle(el);const cw=el.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);if(cw<=0)return;
   /* حجم واحد لكل الصفحات: أعرض سطر في المصحف كله = 17.44em (ص577) */
   let fs=Math.min(cw/16.35,38);el.style.fontSize=fs.toFixed(2)+"px";const L=[...el.querySelectorAll(".ql")];let mx=0;L.forEach(l=>{let w=0;for(const c of l.children)w+=c.getBoundingClientRect().width;if(w>mx)mx=w});if(mx>cw*1.005||(mx>0&&mx<cw*.95)){fs=Math.min(fs*cw/mx*.98,46);el.style.fontSize=fs.toFixed(2)+"px"}
-  L.forEach(l=>{l.classList.add("qshort");let w=0;for(const c of l.children)w+=c.getBoundingClientRect().width;l.classList.toggle("qfull",mx>0&&w>=mx*.82&&!l.classList.contains("qc")&&!l.classList.contains("qb"))})}
+  L.forEach(l=>l.classList.add("qshort"))}
 function ring(done,total,size){size=size||76;const r=size/2-7,C=2*Math.PI*r,p=total?done/total:0;
   return `<div class="ring" style="width:${size}px;height:${size}px" role="img" aria-label="أنجزت ${done} من ${total}"><svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="7"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${p===1?"var(--ok)":"var(--primary)"}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p)}" transform="rotate(-90 ${size/2} ${size/2})"/></svg><div class="ring-t"><b>${done}/${total}</b></div></div>`}
 function taskTap(t,ro){
