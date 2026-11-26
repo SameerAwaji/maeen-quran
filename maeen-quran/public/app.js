@@ -2310,6 +2310,8 @@ document.addEventListener("keydown",e=>{if(!(e.ctrlKey||e.metaKey))return;const 
 function feSnapInit(d){try{const el=feElOf(ui.feSel);if(!el)return;d.r0=el.getBoundingClientRect();const sel=new Set(d.items.map(o=>o.el));const xs=[],ys=[];
   const m=document.querySelector("main");if(m){const r=m.getBoundingClientRect();xs.push(r.left,r.left+r.width/2,r.right)}
   document.querySelectorAll("main .card,main .stat,main h1,main h2,main h3,main .btn,main .hb,main .pill,main img,main p,main .greet,main .today-card").forEach(x=>{if(sel.has(x)||x.contains(el)||el.contains(x))return;const r=x.getBoundingClientRect();if(!r.width||r.bottom<-200||r.top>innerHeight+200)return;xs.push(r.left,r.left+r.width/2,r.right);ys.push(r.top,r.top+r.height/2,r.bottom)});d.xs=xs;d.ys=ys}catch(e){}}
+function feSweep(all){document.querySelectorAll(".fe-guide").forEach(x=>x.remove());if(all){document.querySelectorAll("#fe-mq").forEach(x=>x.remove());document.querySelectorAll(".fe-mq-hit,.fe-hov").forEach(x=>x.classList.remove("fe-mq-hit","fe-hov"))}}
+["pointerup","pointercancel"].forEach(t=>document.addEventListener(t,()=>setTimeout(()=>{feSweep(false);document.querySelectorAll("#fe-mq").forEach(x=>{if(!x.isConnected)return;if(!x.dataset.live)x.remove()})},60)));
 function feSnap(d,dx,dy){const G=(id,on,pos,vert)=>{let g=document.getElementById(id);if(!on){if(g)g.remove();return}if(!g){g=document.createElement("div");g.id=id;g.className="fe-guide "+(vert?"v":"h");document.body.appendChild(g)}if(vert)g.style.left=pos+"px";else g.style.top=pos+"px"};
   if(!d.r0){return{dx,dy}}const r=d.r0,T=6;let bx=null,by=null;
   [r.left,r.left+r.width/2,r.right].forEach(c=>{d.xs.forEach(X=>{const df=X-(c+dx);if(Math.abs(df)<T&&(!bx||Math.abs(df)<Math.abs(bx.df)))bx={df,X}})});
@@ -2963,12 +2965,13 @@ document.addEventListener("contextmenu",e=>{if((ui.freeEdit||document.querySelec
 })();
 /* تحديد العناصر بالسحب (مستطيل تحديد) */
 (function(){let mq=null;const ZX="#fe-panel,.pv-bar,.hb-bar,.hb-tools,.draftbar,#modal,.demo-bar,.hb-entry,#fe-box";
-document.addEventListener("pointerdown",e=>{if(!ui.freeEdit||e.button!==0)return;const t=e.target;if(!t.closest||t.closest(ZX))return;if(!t.closest("main,header.top,.tabbar"))return;if(t.closest(".fe-on"))return;mq={x:e.clientX,y:e.clientY,add:e.shiftKey,on:false};e.preventDefault()},true);
+document.addEventListener("pointerdown",e=>{if(!ui.freeEdit||e.button!==0||e.pointerType==="touch")return;const t=e.target;if(!t.closest||t.closest(ZX))return;if(!t.closest("main,header.top,.tabbar"))return;if(t.closest(".fe-on"))return;mq={x:e.clientX,y:e.clientY,add:e.shiftKey,on:false};e.preventDefault()},true);
 document.addEventListener("pointermove",e=>{if(!mq)return;if(window.__hbLift){if(mq.box)mq.box.remove();mq=null;return}const dx=e.clientX-mq.x,dy=e.clientY-mq.y;if(!mq.on&&Math.abs(dx)+Math.abs(dy)<6)return;if(!mq.on){mq.on=true;mq.box=document.createElement("div");mq.box.id="fe-mq";document.body.appendChild(mq.box)}
   const l=Math.min(mq.x,e.clientX),tp=Math.min(mq.y,e.clientY),w=Math.abs(dx),h=Math.abs(dy);Object.assign(mq.box.style,{left:l+"px",top:tp+"px",width:w+"px",height:h+"px"});mq.r={l,t:tp,r:l+w,b:tp+h};
   document.querySelectorAll(".fe-mq-hit").forEach(x=>x.classList.remove("fe-mq-hit"));mqHits(mq.r).forEach(x=>x.classList.add("fe-mq-hit"))});
 function mqHits(R){const all=[...document.querySelectorAll("main, header.top, .tabbar")].flatMap(z=>[...z.querySelectorAll(FE_SEL)]).filter(el=>{if(el.closest(ZX))return false;const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&r.left>=R.l-1&&r.right<=R.r+1&&r.top>=R.t-1&&r.bottom<=R.b+1});
   return all.filter(el=>!all.some(o=>o!==el&&o.contains(el)))}
+document.addEventListener("pointercancel",()=>{if(mq){if(mq.box)mq.box.remove();mq=null}document.querySelectorAll(".fe-mq-hit").forEach(x=>x.classList.remove("fe-mq-hit"))});
 document.addEventListener("pointerup",e=>{if(!mq)return;const M=mq;mq=null;if(!M.on)return;M.box.remove();document.querySelectorAll(".fe-mq-hit").forEach(x=>x.classList.remove("fe-mq-hit"));window.__feMqAt=Date.now();
   const keys=mqHits(M.r).map(el=>{const p=fePath(el);return p?pvKey()+"|"+p:null}).filter(Boolean);
   let S=M.add?feSet().slice():[];keys.forEach(k=>{if(!S.includes(k))S.push(k)});if(!S.length){ui.feSel=null;ui.feMulti=null}else{ui.feMulti=S.length>1?S:null;ui.feSel=S[S.length-1];ui.feScope=null}
@@ -3250,7 +3253,7 @@ function profileView(m){const circ=m.role==="student"?get("circles",m.circleId):
   <div class="menu"><button class="mrow" data-act="myNav"><span class="ti">${ICON.gear}</span><b>ترتيب قائمتي</b><span class="chev">‹</span></button>${A.changePass?`<button class="mrow" data-act="changePass"><span class="ti">${NAVICON.perms||ICON.gear}</span><b>تغيير كلمة المرور</b><span class="chev">‹</span></button>`:""}${MODE==="demo"?`<button class="mrow" data-act="exitDemo"><span class="ti" style="color:var(--bad)">${NAVICON.more}</span><b style="color:var(--bad)">الخروج من التجربة</b><span class="chev">‹</span></button>`:A.logout?`<button class="mrow" data-act="logout"><span class="ti" style="color:var(--bad)">${NAVICON.logout}</span><b style="color:var(--bad)">تسجيل الخروج</b><span class="chev">‹</span></button>`:""}</div></div>`}
 function postRender(){try{const m=["loading","nodb","auth"].includes(MODE)?null:me();const n=m&&m.status==="active"?unreadCount(m):0;
   if(n)document.querySelectorAll('[data-act="go"][data-v="inbox"]').forEach(b=>{const s=document.createElement("span");s.className="nbadge";s.textContent=n>99?"99+":n;b.appendChild(s)});
-  const ch=document.getElementById("chat");if(ch)ch.scrollTop=ch.scrollHeight;notifTick(m);fitMushaf();fitQcf()}catch(e){}
+  const ch=document.getElementById("chat");if(ch)ch.scrollTop=ch.scrollHeight;notifTick(m);fitMushaf();fitQcf();if(!ui.freeEdit)feSweep(true)}catch(e){}
   try{if(document.getElementById("rd-host"))rMountEmbed();else if(RD.embedOn&&!RD.full){RD.embedOn=false;RD.on=false;const o=document.getElementById("mreader");if(o)o.remove()}}catch(e){console.error(e)}}
 Object.assign(NAVICON,{marks:SV('<path d="M4 4h12l4 4v12H4z"/><path d="M8 10h8M8 14h5"/><circle cx="17" cy="17" r="3" fill="currentColor" stroke="none"/>'),inbox:SV('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'),profile:SV('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),logout:SV('<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/>')});
 Object.assign(A,{
