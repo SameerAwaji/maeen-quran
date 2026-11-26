@@ -2053,6 +2053,48 @@ button,.btn,nav,.tab,.pill,.chip{-webkit-user-select:none;user-select:none;-webk
 .zhw .zh-home{min-height:282px}
 .zh-home .zhh-list span{padding:8px 2px}
 .zh-home .zhh-cd span{padding:9px 10px}
+/* ترتيب القائمة: الاسم يأخذ المساحة، ومفتاح الإظهار في طرف الصف */
+.clist[data-sort] .crow{flex-wrap:nowrap!important;gap:10px!important;padding:8px 12px!important;border-radius:14px!important;min-height:52px;box-sizing:border-box}
+.clist[data-sort] .crow>.grow{flex:1 1 auto!important;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clist[data-sort] .crow>label.row{flex:none;margin-inline-start:auto;display:inline-flex!important;align-items:center;gap:8px;flex-direction:row-reverse;font-size:.8rem;color:var(--muted);cursor:pointer}
+.clist[data-sort] .crow>label.row input[type=checkbox]{appearance:none;-webkit-appearance:none;width:44px!important;height:26px!important;border-radius:999px;background:var(--line);position:relative;margin:0;cursor:pointer;transition:background .2s;flex:none}
+.clist[data-sort] .crow>label.row input[type=checkbox]::after{content:"";position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:right .2s}
+.clist[data-sort] .crow>label.row input[type=checkbox]:checked{background:var(--teal,#1fa6c6)}
+.clist[data-sort] .crow>label.row input[type=checkbox]:checked::after{right:21px}
+.clist[data-sort] .crow .grip{flex:none}
+.clist[data-sort] .crow .num{flex:none}
+/* بطاقة الصلاة v2: ثلاث كتل مرتبة */
+.zh-home{gap:14px!important;padding:16px!important}
+.zh-home .zhh-top{align-items:center}
+.zh-home .zhh-n h2{font-size:1.55rem}
+.zh-home .zhh-side{align-self:flex-start;gap:4px}
+.zh-home .zhh-tm{display:grid;gap:8px;padding:10px 12px 12px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.zh-home .zhh-tm .zhh-cd{display:flex!important;align-items:stretch;gap:0}
+.zh-home .zhh-tm .zhh-cd>span{flex:1;display:grid!important;justify-items:center;gap:2px;padding:0!important;background:none!important;border:0!important;text-align:center}
+.zh-home .zhh-tm .zhh-cd .sep{flex:none;width:1px;background:rgba(255,255,255,.18);margin:2px 8px}
+.zh-home .zhh-tm .zhh-cd small{font-size:.7rem!important;opacity:.8}
+.zh-home .zhh-tm .zhh-cd b{font-size:1.35rem!important;font-weight:800;letter-spacing:.5px;color:#fff}
+.zh-home .zhh-tm .zhh-cd .rem b{color:#f5c547!important}
+.zh-home .zhh-tm .zm-bar{margin:0!important;height:5px;border-radius:5px}
+.zh-home .zhh-list{margin-top:auto;gap:6px!important}
+.zh-home .zhh-list span{gap:2px!important;padding:8px 2px 7px!important;border-radius:14px!important;background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.1)}
+.zh-home .zhh-list .pi{display:grid;place-items:center;font-style:normal;opacity:.85}
+.zh-home .zhh-list .pi svg{width:17px;height:17px}
+.zh-home .zhh-list small{font-size:.7rem!important}
+.zh-home .zhh-list b{font-size:.86rem!important}
+.zh-home .zhh-list em{font-style:normal;font-size:.56rem;opacity:.7;white-space:nowrap}
+.zh-home .zhh-list span.past{opacity:.5}
+.zh-home .zhh-list span.nx{background:#f5c547!important;color:#1f3559;border-color:#f5c547;box-shadow:0 6px 16px rgba(245,197,71,.35);transform:translateY(-2px)}
+.zh-home .zhh-list span.nx .pi,.zh-home .zhh-list span.nx em{opacity:1}
+@container (max-width:340px){.zh-home .zhh-tm .zhh-cd b{font-size:1.1rem!important}.zh-home .zhh-list .pi svg{width:14px;height:14px}.zh-home .zhh-list em{font-size:.5rem}}
+.zh-home{gap:10px!important;padding:14px 14px 12px!important}
+.zh-home .zh-ic{width:42px!important;height:42px!important}
+.zh-home .zhh-n h2{font-size:1.4rem}
+.zh-home .zhh-tm{gap:6px;padding:8px 12px 10px}
+.zh-home .zhh-tm .zhh-cd b{font-size:1.2rem!important}
+.zh-home .zhh-list span{padding:6px 2px 5px!important;gap:1px!important}
+.zh-home .zhh-list .pi svg{width:15px;height:15px}
+.zh-home .zhh-list span.nx{transform:none}
 </style>
 </head>
 <body>
