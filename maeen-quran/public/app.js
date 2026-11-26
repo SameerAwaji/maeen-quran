@@ -1241,7 +1241,7 @@ const A={
   brandClear:el=>{saveUi({brand:{...brand(),[el.dataset.k]:""}})},
   fontsReset:()=>{saveUi({brand:{...brand(),fontBody:"",fontHead:"",fontScale:1}})},
   fontScale:el=>{saveUi({brand:{...brand(),fontScale:Number(el.dataset.v)}})},
-  pickFont:el=>{saveUi({brand:{...brand(),fontBody:el.dataset.v}})},
+  pickFont:el=>{saveUi({brand:{...brand(),fontBody:el.dataset.v,fontV:2}})},
   myNav:()=>myNavModal(),
   myNavMove:el=>{const items=[...modalCtx.items];const i=+el.dataset.i,j=i+(+el.dataset.n);if(j<0||j>=items.length)return;[items[i],items[j]]=[items[j],items[i]];myNavModal(items)},
   myNavReset:()=>{patch("members",me().id,{navPref:[]});closeModal();toast("أُعيد الترتيب الافتراضي")},
@@ -1864,10 +1864,11 @@ function programReportData(pid){
 const uiCfg=()=>get("config","ui")||{};
 const DEF_BRAND={tagline:"أحد برامج مَعين",verse:"«خيرُكم مَن تعلَّم القرآنَ وعلَّمه»",primary:"",accent:"",bg:"",surface:"",header:"",fontBody:"",fontHead:"",fontScale:1,hideLogo:false};
 const FONT_HOST="self";
-const FONTS=[["Tajawal","تجوال","عصري وواضح"],["Cairo","القاهرة","عريض ومقروء"],["Almarai","المراعي","بسيط وهادئ"],["IBM Plex Sans Arabic","IBM Plex عربي","رسمي ومتوازن"],["Readex Pro","ريدكس","حديث ودائري"],["Noto Kufi Arabic","نوتو كوفي","كوفي هندسي"],["Reem Kufi","ريم كوفي","كوفي زخرفي للعناوين"],["Noto Naskh Arabic","نوتو نسخ","نسخ تقليدي"],["Amiri","أميري","نسخ كلاسيكي"]];
-const FONT_STACK=f=>`"${f}","Tajawal",Tahoma,"Segoe UI",sans-serif`;
+const FONTS=[["SF Arabic","خط آبل (SF)","خط الآيفون — مثل تطبيقات آبل"],["Tajawal","تجوال","عصري وواضح"],["Cairo","القاهرة","عريض ومقروء"],["Almarai","المراعي","بسيط وهادئ"],["IBM Plex Sans Arabic","IBM Plex عربي","رسمي ومتوازن"],["Readex Pro","ريدكس","حديث ودائري"],["Noto Kufi Arabic","نوتو كوفي","كوفي هندسي"],["Reem Kufi","ريم كوفي","كوفي زخرفي للعناوين"],["Noto Naskh Arabic","نوتو نسخ","نسخ تقليدي"],["Amiri","أميري","نسخ كلاسيكي"]];
+const SF_STACK=`"SF Arabic","SF Pro Text",-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI","Noto Sans Arabic","Tajawal",Tahoma,sans-serif`;
+const FONT_STACK=f=>f==="SF Arabic"?SF_STACK:`"${f}","Tajawal",Tahoma,"Segoe UI",sans-serif`;
 const lum=h=>{const n=parseInt(h.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255;const L=c=>c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4);return .2126*L(r)+.7152*L(g)+.0722*L(b)};
-const brand=()=>({...DEF_BRAND,...(uiCfg().brand||{})});
+const brand=()=>{const b={...DEF_BRAND,...(uiCfg().brand||{})};if(!b.fontV&&(!b.fontBody||b.fontBody==="Tajawal"))b.fontBody="SF Arabic";return b};
 function saveUi(patch){return stageConfig("ui",{...uiCfg(),...patch})}
 let TDEF=null;
 const TERM_DICTS=()=>[["ROLE","الأدوار",ROLE,null],["TRACK","المسارات",TRACK,null],["CTRACK","مسارات الحلقات",CTRACK,null],["ATT","حالات الحضور",ATT,null],["GR","التقديرات",GR,null],["KIND","أنواع المهام",KIND,null],["PKIND","أنواع البرامج المصاحبة",PKIND,null],["JST","حالات خريطة الحفظ",JST,0],["SESS_LBL","حالات المواعيد",SESS_LBL,0],["TATT","حالات حضور المعلمين",TATT,1]];
@@ -1918,7 +1919,7 @@ function applyTheme(){
   const css=faces+(lv||dv?`:root{${lv}}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){${dv}}}:root[data-theme="light"]{${lv}}:root[data-theme="dark"]{${dv}}`:"")+(fv?`:root{${fv}}`:"")+(sc!==1?`html{font-size:${sc*100}%}body{font-size:${(16*sc).toFixed(1)}px}`:"")+designCSS(design())+icCSS(design())+freeCSS(design().free);try{document.documentElement.dataset.hero=design().hero||"poster";document.body.dataset.pv=pvKey();document.body.classList.toggle("free-edit",!!ui.freeEdit);document.body.classList.toggle("sim-mob",editing()&&edDev()==="m"&&innerWidth>=760);document.body.classList.toggle("sim-desk",editing()&&edDev()==="d"&&innerWidth<760);setTimeout(()=>{feApplyText();try{decorIcons();vivid()}catch(e){}},0)}catch(e){}
   let el=document.getElementById("ctheme");if(!el){el=document.createElement("style");el.id="ctheme";document.head.appendChild(el)}if(el.textContent!==css)el.textContent=css;
   const gnames=new Set((b.customFonts||[]).filter(f=>f&&f.google).map(f=>cssName(f.name)));
-  const need=[...new Set([fb,fh].filter(f=>f&&f!=="Tajawal"&&(FONT_HOST==="google"&&FONTS.some(x=>x[0]===f)||gnames.has(f))))];
+  const need=[...new Set([fb,fh].filter(f=>f&&f!=="Tajawal"&&f!=="SF Arabic"&&(FONT_HOST==="google"&&FONTS.some(x=>x[0]===f)||gnames.has(f))))];
   const href=need.length?"https://fonts.googleapis.com/css2?"+need.map(f=>"family="+encodeURIComponent(f).replace(/%20/g,"+")+(gnames.has(f)?"":":wght@400;700")).join("&")+"&display=swap":"";
   let l=document.getElementById("gfont");if(href){if(!l){l=document.createElement("link");l.id="gfont";l.rel="stylesheet";document.head.appendChild(l)}if(l.getAttribute("href")!==href)l.setAttribute("href",href)}else if(l)l.remove();
 }
