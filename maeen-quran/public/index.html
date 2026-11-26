@@ -2125,6 +2125,36 @@ div.t,b.t,.goal-t,.pod-n,.t3-n,summary,.zt-n{font-weight:600}
 .dk-t.dk-q,.fz-dk.dk-q{font-family:"KFGQPC Hafs","Amiri Quran",serif!important;font-weight:400!important;font-size:1.35rem!important;line-height:2.1!important}
 #mreader .rd-rli b,#mreader .rd-bmr small,#mreader .rd-li small.rd-q,.mp-word,.mpick .mp-cl,.mpick [data-act="mpClus"],.mpick .cl,.mcard-w{font-family:"KFGQPC Hafs","Amiri Quran",serif!important}
 #mreader .rd-rli b{font-weight:400!important;font-size:1.08rem}
+
+/* عناوين البطاقات: عريض بحجمها السابق */
+main h2,.card-h h2,.card h2{font-weight:700;font-size:1.25rem}
+/* نافذة تحديد الخطأ: النوع بجانب «تم»، والحروف تتسع داخل الصندوق */
+.mpick{display:grid;gap:10px}
+.mpick .mp-head{display:flex;align-items:center;gap:8px;min-width:0}
+.mpick .mp-tt{flex:1;min-width:0;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mpick .mp-types{flex:none;display:inline-flex!important;margin:0!important;align-self:center}
+.mpick .mp-types button{padding:6px 10px!important;font-size:.82rem!important;min-height:34px}
+.mpick .mp-done{flex:none;min-height:34px}
+.mpick .mp-steps{display:none}
+.mpick .mp-word{display:grid!important;grid-template-columns:repeat(min(var(--n,6),7),minmax(0,1fr));gap:6px;direction:rtl}
+.mpick .mp-word .cl{min-width:0!important;width:100%;padding:0!important;height:52px;font-size:1.7rem!important;line-height:1!important;display:grid;place-items:center;border-radius:12px;overflow:hidden}
+.mpick .mp-hars{justify-content:center;margin:0}
+.mpick .mp-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mpick .mp-foot .hint{margin:0;font-size:.75rem}
+#mreader .rd-pick .mpick .hint{display:block!important}
+/* داخل المصحف: الكلمة أخف، ومنطقة الحرف أقوى، ووسم بالحرف */
+#mreader .mushaf .w.mk-part.mk-t{background:color-mix(in srgb,#f5c547 18%,transparent)!important}
+#mreader .mushaf .w.mk-part.mk-l{background:color-mix(in srgb,#ef4444 18%,transparent)!important}
+#mreader .mushaf .w.mk-part.rd-mk-t{background:color-mix(in srgb,#f5c547 16%,transparent)!important;box-shadow:none}
+#mreader .mushaf .w.mk-part.rd-mk-l{background:color-mix(in srgb,#ef4444 16%,transparent)!important;box-shadow:none}
+#mreader .rd-mkz{position:absolute;pointer-events:none;border-radius:5px;z-index:1}
+#mreader .rd-mkz.t{background:rgba(245,197,71,.55);box-shadow:inset 0 -3px 0 #e0a800}
+#mreader .rd-mkz.l{background:rgba(239,68,68,.5);box-shadow:inset 0 -3px 0 #dc2626}
+#mreader .rd-mkb{position:absolute;pointer-events:none;z-index:3;transform:translate(-50%,-92%);display:flex;align-items:center;gap:3px;padding:1px 7px 2px;border-radius:8px;font-style:normal;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+#mreader .rd-mkb.t{background:#f5c547;color:#1f2937}
+#mreader .rd-mkb.l{background:#ef4444;color:#fff}
+#mreader .rd-mkb b{font-family:"KFGQPC Hafs","Amiri Quran",serif;font-size:15px;font-weight:400;line-height:1.5}
+#mreader .rd-mkb small{font-size:10px;font-weight:600}
 </style>
 </head>
 <body>
