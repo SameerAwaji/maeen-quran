@@ -1,5 +1,5 @@
 /* عامل الخدمة: يعمل الموقع بدون إنترنت، ويستقبل الإشعارات والمنصة مقفلة */
-const V = "maeen-v7";
+const V = "maeen-v8";
 const FC = "maeen-mushaf-1"; // خطوط وصفحات المصحف والتفاسير: تبقى محفوظة حتى مع تحديث المنصة
 const SHELL = ["./", "index.html", "app.js", "config.js", "vendor/supabase.js", "manifest.webmanifest", "icon-192.png"];
 const NET_FIRST = /\/(index\.html|app\.js|config\.js)?$/;
