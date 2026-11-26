@@ -2180,6 +2180,72 @@ main h2,.card-h h2,.card h2{font-weight:700;font-size:1.25rem}
 .zh-home .zhh-tm{padding:6px 12px 8px!important;gap:5px!important;border-radius:14px!important}
 .zh-home .zhh-tm .zhh-cd b{font-size:1.15rem!important}
 .zh-home .zhh-tm .zm-bar{height:4px!important}
+/* ===== أحجام الودجت مثل آبل: البطاقة تتشكل حسب حجمها ===== */
+
+/* صغير (مربع) */
+@container zw (max-width:230px){
+ .zh-home{padding:12px!important;gap:6px!important;justify-content:space-between!important}
+ .zh-home .zhh-top{flex-direction:column;align-items:flex-start;gap:6px}
+ .zh-home .zh-ic{width:34px!important;height:34px!important;border-radius:11px!important}
+ .zh-home .zh-ic svg{width:20px;height:20px}
+ .zh-home .zhh-side,.zh-home .zhh-list,.zh-home .zhh-cd>span:not(.rem),.zh-home .zhh-cd .sep,.zh-home .zh-iq{display:none!important}
+ .zh-home .zhh-n h2{font-size:1.45rem!important}
+ .zh-home .zhh-tm{padding:0!important;background:none!important;border:0!important;gap:6px!important}
+ .zh-home .zhh-tm .zhh-cd>span{justify-items:start!important;text-align:start!important}
+ .zh-home .zhh-tm .zhh-cd b{font-size:1.35rem!important}
+}
+/* متوسط (مستطيل عريض) */
+@container zw (min-width:231px) and (min-aspect-ratio:7/4){
+ .zh-home{padding:12px 14px!important;gap:8px!important}
+ .zh-home .zhh-side,.zh-home .zm-bar,.zh-home .zhh-cd>span:not(.rem),.zh-home .zhh-cd .sep,.zh-home .zhh-list em,.zh-home .zhh-list .pi{display:none!important}
+ .zh-home .zhh-top{align-items:center}
+ .zh-home .zh-ic{width:38px!important;height:38px!important}
+ .zh-home .zhh-n h2{font-size:1.3rem!important}
+ .zh-home .zhh-tm{position:absolute;top:12px;left:14px;padding:0!important;background:none!important;border:0!important}
+ .zh-home .zhh-tm .zhh-cd>span{justify-items:end!important}
+ .zh-home .zhh-tm .zhh-cd b{font-size:1.3rem!important}
+ .zh-home .zhh-list span{padding:5px 2px!important}
+ .zh-home .zhh-list b{font-size:.8rem!important}
+}
+.zh-home{position:relative}
+/* ===== أحجام البطاقات مثل آبل: صغير/متوسط/كبير + حجم حر =====
+   صغير: مربع بنصف العرض · متوسط: مستطيل بكامل العرض وبارتفاع الصغير · كبير: مربع بكامل العرض
+   (على الشاشات العريضة: الصغير ربع العرض، والمتوسط والكبير نصف العرض) */
+.hgrid>.hb.hb-sz{overflow:hidden}
+.hgrid>.hb.hb-sz>*:not(.hb-tools):not(.hb-rs){height:100%;min-height:0!important;overflow:hidden;box-sizing:border-box}
+.hgrid>.hb.hb-sz-s{grid-column:span 6!important;aspect-ratio:1/1}
+.hgrid>.hb.hb-sz-m{grid-column:span 12!important;aspect-ratio:calc((2 * var(--sq,160px) + var(--hgap,14px)) / var(--sq,160px))}
+.hgrid>.hb.hb-sz-m{aspect-ratio:2.1/1}
+.hgrid>.hb.hb-sz-l{grid-column:span 12!important;aspect-ratio:1/1}
+@media (min-width:760px){.hgrid>.hb.hb-sz-s{grid-column:span 3!important}.hgrid>.hb.hb-sz-m,.hgrid>.hb.hb-sz-l{grid-column:span 6!important}}
+.hgrid.editing>.hb.hb-sz{aspect-ratio:auto}
+.hb-szsel{max-width:112px}
+/* المحتوى يتأقلم مع حجم البطاقة (المقاسات المحددة أو الحجم الحر بطول ثابت) */
+.hb.hb-sz .zhw,.hb.hb-fix .zhw{container-type:size;container-name:zw;height:100%}
+.hb.hb-sz .zhw .zh-home,.hb.hb-fix .zhw .zh-home{min-height:0!important;height:100%!important;box-sizing:border-box}
+.hb.hb-sz>.card,.hb.hb-fix>.card{container-type:size;container-name:cw}
+@container cw (max-height:240px){.hb .card .card-h{margin-bottom:6px}.hb .card .list .li:nth-child(n+4),.hb .card .li:nth-child(n+4){display:none}}
+@container cw (max-height:170px){.hb .card .list .li:nth-child(n+2),.hb .card .li:nth-child(n+2),.hb .card .hint,.hb .card p.muted{display:none}}
+@container cw (max-width:200px){.hb .card .card-h h2{font-size:1rem}.hb .card .btn{padding-inline:8px;font-size:.8rem}}
+/* البطاقات الصغيرة: محتوى مضغوط يركّز على الأهم */
+.hb.hb-sz-s>.card{padding:12px!important;font-size:.88rem}
+.hb.hb-sz-s>.card .card-h{margin-bottom:6px!important;gap:6px!important;flex-wrap:nowrap}
+.hb.hb-sz-s>.card .card-h h2{font-size:1rem!important;line-height:1.25}
+.hb.hb-sz-s>.card .card-h>:not(h2):not(.card-ic):not(.ic){display:none!important}
+.hb.hb-sz-s>.card .card-h .card-ic,.hb.hb-sz-s>.card .card-h .ic{width:30px!important;height:30px!important}
+.hb.hb-sz-s>.card .hint,.hb.hb-sz-s>.card p.muted,.hb.hb-sz-s>.card .small.muted{display:none!important}
+.hb.hb-sz-s>.card .pod,.hb.hb-sz-s>.card .podium{transform:scale(.82);transform-origin:top center}
+.hb.hb-sz-m>.card{padding:14px!important}
+.hb.hb-sz-m>.card .hint{display:none!important}
+.hb.hb-sz-s .pod{padding:6px 2px!important;min-width:0;transform:none!important}
+.hb.hb-sz-s .pod-av{width:32px!important;height:32px!important;font-size:.85rem!important}
+.hb.hb-sz-s .pod-n{white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;font-size:.72rem!important;max-width:100%;display:block}
+.hb.hb-sz-s .pod-b,.hb.hb-sz-s .pod-p{display:none!important}
+.hb.hb-sz-s .t3{gap:5px!important}
+.hb.hb-sz-s .t3-i{padding:8px 3px!important;min-width:0;gap:4px!important}
+.hb.hb-sz-s .t3-m{width:30px!important;height:30px!important;font-size:.85rem!important}
+.hb.hb-sz-s .t3-n{white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;font-size:.72rem!important;max-width:100%;display:block;line-height:1.3}
+.hb.hb-sz-s .t3-p{display:none!important}
 </style>
 </head>
 <body>
