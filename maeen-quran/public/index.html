@@ -2370,6 +2370,23 @@ main h2,.card-h h2,.card h2{font-weight:700;font-size:1.25rem}
 .hgrid{container-type:inline-size;container-name:hg}
 @media (min-width:760px){.hgrid>.hb.hb-sz-s{grid-column:span 6!important}.hgrid>.hb.hb-sz-m,.hgrid>.hb.hb-sz-l{grid-column:span 12!important}}
 @container hg (min-width:880px){.hgrid>.hb.hb-sz-s{grid-column:span 3!important}.hgrid>.hb.hb-sz-m,.hgrid>.hb.hb-sz-l{grid-column:span 6!important}}
+
+/* نافذة تحديد الخطأ المختصرة: سطرين فقط حتى لا تغطي الآيات */
+.mpick.mpc{gap:8px!important}
+.mpick.mpc .mp-head{gap:6px}
+.mpick.mpc .mp-tt{font-size:.82rem;opacity:.85}
+.mpick.mpc .mp-types button{padding:4px 9px!important;min-height:32px!important;font-size:.78rem!important}
+.mpick.mpc .mp-del{flex:none;min-height:32px!important;width:34px;padding:0!important;display:grid;place-items:center;color:var(--bad)}
+.mpick.mpc .mp-done{min-height:32px!important;padding-inline:14px}
+.mpick.mpc .mp-row{display:flex;align-items:center;gap:8px;min-width:0;direction:rtl}
+.mpick.mpc .mp-word{display:flex!important;flex:1 1 auto;min-width:0;gap:5px;overflow-x:auto;scrollbar-width:none}
+.mpick.mpc .mp-word::-webkit-scrollbar{display:none}
+.mpick.mpc .mp-word .cl{flex:1 0 36px;max-width:52px;height:42px!important;font-size:1.4rem!important;border-radius:10px}
+.mpick.mpc .mp-sep{flex:none;width:1px;align-self:stretch;background:currentColor;opacity:.18}
+.mpick.mpc .mp-hars{display:flex;flex:none;gap:5px;margin:0}
+.mpick.mpc .mp-hars .chip-b{min-height:42px!important;padding:0 10px;font-size:.8rem;white-space:nowrap}
+#mreader .rd-pick{max-height:none!important}
+#mreader .rd-pick .mpick.mpc{padding:8px 10px!important}
 </style>
 </head>
 <body>
